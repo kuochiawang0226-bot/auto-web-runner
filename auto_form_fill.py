@@ -6,7 +6,15 @@
 import os
 import time
 
-TARGET_URL = os.environ.get("TARGET_URL", "https://請填入網址")
+_raw_url = os.environ.get("TARGET_URL", "")
+TARGET_URL = _raw_url.strip()
+
+print("網址設定檢查：", {
+    "有讀到內容": bool(_raw_url),
+    "前後有空白或換行": _raw_url != TARGET_URL,
+    "以https開頭": TARGET_URL.startswith("https://"),
+    "包含預設提示文字": "請填入" in TARGET_URL,
+})
 EXCEL_PATH = os.environ.get("EXCEL_PATH", "data.xlsx")
 SHEET_NAME = os.environ.get("SHEET_NAME") or None
 DROPDOWN1_OPTION = "中部汽車"
