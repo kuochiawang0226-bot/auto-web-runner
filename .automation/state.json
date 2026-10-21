@@ -945,11 +945,11 @@
       "end": 0,
       "max_retries": 10,
       "max_runs": 300,
-      "index": 226,
+      "index": 227,
       "runs": 227,
       "retries": 0,
       "step": 227,
-      "status": "in_flight",
+      "status": "ready",
       "events": [
         {
           "time": "2026-10-21T07:09:42.953026+00:00",
@@ -2537,7 +2537,7 @@
           "time": "2026-10-21T12:01:16.013024+00:00",
           "row": 229,
           "run_id": "39596216582",
-          "result": "in_flight",
+          "result": "操作完成（沿用原程式判定）",
           "ip": "4.150.183.138"
         }
       ]
