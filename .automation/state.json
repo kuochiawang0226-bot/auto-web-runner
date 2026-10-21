@@ -697,17 +697,17 @@
       "end": 2,
       "max_retries": 5,
       "max_runs": 100,
-      "index": 0,
+      "index": 1,
       "runs": 1,
       "retries": 0,
       "step": 1,
-      "status": "in_flight",
+      "status": "complete",
       "events": [
         {
           "time": "2026-10-21T07:04:38.332285+00:00",
           "row": 2,
           "run_id": "39559401591",
-          "result": "in_flight",
+          "result": "操作完成（沿用原程式判定）",
           "ip": "68.220.60.152"
         }
       ]
