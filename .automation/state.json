@@ -971,11 +971,11 @@
       "end": 0,
       "max_retries": 10,
       "max_runs": 300,
-      "index": 252,
+      "index": 253,
       "runs": 253,
       "retries": 0,
       "step": 253,
-      "status": "in_flight",
+      "status": "ready",
       "events": [
         {
           "time": "2026-10-21T07:09:42.953026+00:00",
@@ -2745,7 +2745,7 @@
           "time": "2026-10-21T12:35:31.802382+00:00",
           "row": 255,
           "run_id": "39600692871",
-          "result": "in_flight",
+          "result": "操作完成（沿用原程式判定）",
           "ip": "172.208.153.226"
         }
       ]
