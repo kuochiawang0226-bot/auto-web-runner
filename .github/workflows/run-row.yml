@@ -1,0 +1,85 @@
+name: Single-row website operation
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'check_ip 只查IP；execute 實際操作並自動接續'
+        type: choice
+        options: [check_ip, execute]
+        default: check_ip
+      batch_id:
+        description: '批次名稱（續跑沿用；新資料才換名稱）'
+        default: batch-001
+        required: true
+        type: string
+      start_row:
+        description: '起始 Excel 列號'
+        default: '2'
+        required: true
+        type: string
+      end_row:
+        description: '最後列號；0 表示讀到 A 欄空白'
+        default: '0'
+        required: true
+        type: string
+      max_retries:
+        description: '每筆重複 IP 的額外重試上限（0–20）'
+        default: '5'
+        required: true
+        type: string
+      max_runs:
+        description: '整批總工作次數上限，含重複 IP（1–500）'
+        default: '100'
+        required: true
+        type: string
+      expected_step:
+        description: '自動接續使用，手動啟動請留空'
+        default: ''
+        type: string
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: single-row-website-global
+  cancel-in-progress: false
+jobs:
+  one-attempt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Run one attempt
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          TARGET_URL: ${{ secrets.TARGET_URL }}
+          EXCEL_PATH: data.xlsx
+          SHEET_NAME: ${{ vars.SHEET_NAME }}
+          MODE: ${{ inputs.mode }}
+          BATCH_ID: ${{ inputs.batch_id }}
+          START_ROW: ${{ inputs.start_row }}
+          END_ROW: ${{ inputs.end_row }}
+          MAX_RETRIES: ${{ inputs.max_retries }}
+          MAX_RUNS: ${{ inputs.max_runs }}
+          EXPECTED_STEP: ${{ inputs.expected_step }}
+        run: python auto_form_fill.py
+      - name: Save result and error screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: result-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            本次結果.json
+            錯誤畫面_*.png
+          if-no-files-found: ignore
+          retention-days: 14
