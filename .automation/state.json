@@ -3366,11 +3366,11 @@
       "end": 0,
       "max_retries": 20,
       "max_runs": 500,
-      "index": 233,
+      "index": 234,
       "runs": 239,
       "retries": 0,
       "step": 239,
-      "status": "in_flight",
+      "status": "ready",
       "events": [
         {
           "time": "2026-10-22T01:05:34.738317+00:00",
@@ -5042,7 +5042,7 @@
           "time": "2026-10-22T06:22:37.025813+00:00",
           "row": 536,
           "run_id": "39733473923",
-          "result": "in_flight",
+          "result": "操作完成（沿用原程式判定）",
           "ip": "20.109.38.55"
         }
       ]
