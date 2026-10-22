@@ -3164,11 +3164,11 @@
       "end": 0,
       "max_retries": 20,
       "max_runs": 500,
-      "index": 31,
+      "index": 32,
       "runs": 32,
       "retries": 0,
       "step": 32,
-      "status": "in_flight",
+      "status": "ready",
       "events": [
         {
           "time": "2026-10-22T01:05:34.738317+00:00",
@@ -3391,7 +3391,7 @@
           "time": "2026-10-22T01:45:05.589109+00:00",
           "row": 334,
           "run_id": "39707415984",
-          "result": "in_flight",
+          "result": "操作完成（沿用原程式判定）",
           "ip": "135.119.38.52"
         }
       ]
