@@ -26,6 +26,7 @@ FIELD_SELECTOR = ""
 FIELD_PLACEHOLDER = "請填入文字"
 
 CUSTOM_DROPDOWN_CSS = (
+    '[role="listbox"][aria-expanded], '
     "[role=combobox], [aria-haspopup=listbox], .el-select, .ant-select, "
     ".select2-selection, .v-select, .dropdown-toggle"
 )
@@ -167,10 +168,64 @@ import re
 import urllib.request
 import urllib.error
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
+import secrets
 
 STATE_PATH = '.automation/state.json'
 WORKFLOW_FILE = 'run-row.yml'
+STOP_PATH = '.automation/STOP'
+
+
+class StopRequested(Exception):
+    pass
+
+
+class SchedulePause(StopRequested):
+    pass
+
+
+TAIPEI = ZoneInfo('Asia/Taipei')
+
+
+def local_now():
+    return datetime.now(TAIPEI)
+
+
+def day_plan(batch, clock):
+    day = clock.date().isoformat()
+    if batch.get('daily', {}).get('date') != day:
+        base = clock.replace(hour=0, minute=0, second=0, microsecond=0)
+        batch['daily'] = {
+            'date': day,
+            'start_at': (base + timedelta(hours=8, minutes=30, seconds=secrets.randbelow(1800))).isoformat(),
+            'stop_at': (base + timedelta(hours=20, minutes=30, seconds=secrets.randbelow(1801))).isoformat(),
+            'started': False, 'submitted': False}
+    return batch['daily']
+
+
+def check_daily_window(batch, clock):
+    plan = batch.get('daily', {})
+    if plan.get('date') != clock.date().isoformat() or not plan.get('started'):
+        raise SchedulePause('等待今日排程啟動。')
+    if not datetime.fromisoformat(plan['start_at']) <= clock < datetime.fromisoformat(plan['stop_at']):
+        raise SchedulePause('已到休息時間，保留列號與輪次。')
+    if not plan.get('submitted') and clock >= clock.replace(hour=9, minute=0, second=0, microsecond=0):
+        raise SchedulePause('今天尚未送出且已超過 09:00，等待明日。')
+
+
+def advance_round(batch):
+    if batch['status'] not in ('complete', 'limit_reached'):
+        return False
+    if batch['round'] >= batch['max_rounds']:
+        batch['status'] = 'all_rounds_complete'
+        return False
+    batch['round'] += 1
+    batch['index'] = 0
+    batch['runs'] = 0
+    batch['retries'] = 0
+    batch['status'] = 'ready'
+    return True
 
 
 def now():
@@ -229,6 +284,8 @@ class GitHubStore:
                 raise
             return {'version': 1, 'used_ips': [], 'batches': {}}
         self.sha = response['sha']
+        if not response.get('content'):
+            response = self.request('GET', '/git/blobs/' + self.sha)
         state = json.loads(base64.b64decode(response['content']))
         if state.get('version') != 1:
             raise RuntimeError('不支援的狀態檔版本')
@@ -243,6 +300,16 @@ class GitHubStore:
         # 使用 SHA 防止覆蓋其他工作的更新；失敗就停止，不自動覆寫。
         response = self.request('PUT', '/contents/' + STATE_PATH, body)
         self.sha = response['content']['sha']
+
+    def check_stop(self):
+        from urllib.parse import quote
+        try:
+            self.request('GET', '/contents/' + STOP_PATH + '?ref=' + quote(self.branch, safe=''))
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                return
+            raise  # 無法確認停止旗標時，停止操作。
+        raise StopRequested('偵測到 .automation/STOP，停止後續操作。')
 
     def dispatch(self, inputs):
         self.request('POST', '/actions/workflows/' + WORKFLOW_FILE + '/dispatches',
@@ -272,13 +339,14 @@ def lookup_ip(page):
     return valid_ip(page.inner_text('body'))
 
 
-def apply_row(page, row):
+def apply_row(page, row, check_stop=lambda: None):
     row_no, a, b = row
     page.goto(TARGET_URL, timeout=90000)
     page.wait_for_load_state('networkidle', timeout=60000)
     choose(page, 0, DROPDOWN1_OPTION, DROPDOWN1_SELECTOR)
     choose(page, 1, a, DROPDOWN2_SELECTOR)
     fill_field(page, b)
+    check_stop()
     click_submit(page)
     time.sleep(WAIT_AFTER_SUBMIT)
 
@@ -298,7 +366,7 @@ def process_attempt(state, batch, rows, get_ip, operate, save):
     batch['runs'] += 1
     batch['step'] += 1
     row = rows[batch['index']]
-    event = {'time': now(), 'row': row[0], 'run_id': os.environ.get('GITHUB_RUN_ID', ''),
+    event = {'round': batch['round'], 'time': now(), 'row': row[0], 'run_id': os.environ.get('GITHUB_RUN_ID', ''),
              'result': 'checking', 'ip': ''}
     batch['events'].append(event)
     try:
@@ -327,6 +395,19 @@ def process_attempt(state, batch, rows, get_ip, operate, save):
     save(state)
     try:
         operate(row)
+    except SchedulePause:
+        event['result'] = 'paused_before_submit'
+        batch['status'] = 'waiting_window'
+        # 尚未送出，歸還本輪預算，確保隔日仍從同一列續做。step 不回退。
+        batch['runs'] -= 1
+        save(state)
+        return False
+    except StopRequested:
+        event['result'] = 'stopped_before_submit'
+        batch['status'] = 'stopped'
+        batch['runs'] -= 1
+        save(state)
+        return False
     except Exception as exc:
         event['result'] = 'operation_uncertain'
         event['error'] = str(exc)
@@ -335,6 +416,7 @@ def process_attempt(state, batch, rows, get_ip, operate, save):
         return False
     event['result'] = '操作完成（沿用原程式判定）'
     batch['index'] += 1
+    batch['total_processed'] += 1
     batch['retries'] = 0
     batch['status'] = 'complete' if batch['index'] == len(rows) else 'ready'
     if batch['status'] == 'ready' and batch['runs'] >= batch['max_runs']:
@@ -343,72 +425,221 @@ def process_attempt(state, batch, rows, get_ip, operate, save):
     return batch['status'] == 'ready'
 
 
+
+def write_result(batch):
+    Path('本次結果.json').write_text(json.dumps(batch, ensure_ascii=False, indent=2), encoding='utf-8')
+    print('輪次：', batch['round'], '/', batch['max_rounds'],
+          '本輪已處理：', batch['index'], '累計：', batch['total_processed'], '狀態：', batch['status'])
+    if batch.get('daily'):
+        print('今日台灣時間：', batch['daily']['start_at'], '～', batch['daily']['stop_at'])
+
+
+def inputs_for(batch_id, batch):
+    return {'mode': 'execute', 'batch_id': batch_id,
+            'start_row': str(batch['start']), 'end_row': str(batch['end']),
+            'max_retries': str(batch['max_retries']), 'max_runs': str(batch['max_runs']),
+            'max_rounds': str(batch['max_rounds']), 'expected_step': str(batch['step']),
+            'expected_date': batch['daily']['date']}
+
+
+def start_day(batch, clock):
+    plan = day_plan(batch, clock)
+    if clock >= clock.replace(hour=9, minute=0, second=0, microsecond=0):
+        return False
+    if clock < datetime.fromisoformat(plan['start_at']):
+        return False
+    plan['started'] = True
+    if batch['status'] == 'waiting_window':
+        batch['status'] = 'ready'
+    return True
+
+
 def main():
     if os.environ.get('GITHUB_ACTIONS') != 'true':
-        raise RuntimeError('此版本請透過附帶的 GitHub Actions 工作流程執行。')
-    mode = os.environ.get('MODE', 'check_ip')
-    if mode not in ('check_ip', 'execute'):
+        raise RuntimeError('請透過 GitHub Actions 執行。')
+    scheduled = os.environ.get('GITHUB_EVENT_NAME') == 'schedule'
+    mode = 'schedule' if scheduled else os.environ.get('MODE', 'check_ip')
+    if mode not in ('check_ip', 'execute', 'schedule'):
         raise ValueError('未知模式')
-    if mode == 'execute' and ('請填入' in TARGET_URL or not TARGET_URL.startswith('https://')):
-        raise ValueError('請先設定 TARGET_URL Secret（HTTPS 網址）。')
     store = GitHubStore()
     state = store.load()
     state['used_ips'] = sorted(set(state['used_ips']) | legacy_ips('送出紀錄.csv'))
+    if mode == 'check_ip':
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(headless=True)
+            try:
+                ip = lookup_ip(browser.new_page())
+                print('出口 IP：', ip, '歷史重複：', ip in state['used_ips'])
+                print('僅查 IP，不登記排程、不操作網站。')
+            finally:
+                browser.close()
+        return
+    if '請填入' in TARGET_URL or not TARGET_URL.startswith('https://'):
+        raise ValueError('請先設定 TARGET_URL Secret（HTTPS 網址）。')
+    expected = os.environ.get('EXPECTED_STEP', '').strip() if not scheduled else ''
+    continuation = bool(expected)
+    registration = not scheduled and not continuation
+    if registration:
+        batch_id = os.environ.get('BATCH_ID', '').strip()
+        if not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', batch_id):
+            raise ValueError('批次名稱只能含英數字、底線、連字號，1–64 字。')
+        start = int(os.environ.get('START_ROW') or '2')
+        end = int(os.environ.get('END_ROW') or '0')
+        retries = int(os.environ.get('MAX_RETRIES') or '5')
+        max_runs = int(os.environ.get('MAX_RUNS') or '100')
+        rounds = int(os.environ.get('MAX_ROUNDS') or '1')
+        if start < 2 or (end and end < start) or not 0 <= retries <= 20 or not 1 <= max_runs <= 500 or not 1 <= rounds <= 100:
+            raise ValueError('列號／上限／輪數設定不正確。')
+        rows = read_data(start, end)
+        if not rows:
+            raise ValueError('選定範圍沒有資料。')
+        config = dict(start=start, end=end, max_retries=retries, max_runs=max_runs, max_rounds=rounds,
+                      fingerprint=hashlib.sha256(json.dumps([TARGET_URL, SHEET_NAME, rows], ensure_ascii=False).encode()).hexdigest())
+        batch = state['batches'].get(batch_id)
+        if batch is None:
+            batch = dict(config, round=1, total_processed=0, index=0, runs=0, retries=0, step=0, status='ready', events=[])
+            state['batches'][batch_id] = batch
+        elif any(batch.get(k) != v for k, v in config.items()):
+            raise RuntimeError('批次設定／資料不同。延續循環版請沿用原參數；舊版無輪數批次不自動轉換。')
+        active = state.get('daily_schedule', {})
+        if active.get('enabled') and active.get('batch_id') != batch_id:
+            raise RuntimeError('已有其他每日排程。先將 state.json 的 daily_schedule.enabled 改為 false，再登記新批次。')
+        store.check_stop()
+        if batch['status'] == 'stopped':
+            batch['status'] = 'ready'
+        if batch['status'] not in ('ready', 'waiting_window', 'complete', 'limit_reached', 'all_rounds_complete'):
+            raise RuntimeError('批次需人工核對：' + batch['status'])
+        state['daily_schedule'] = {'batch_id': batch_id, 'enabled': batch['status'] != 'all_rounds_complete'}
+        store.save(state)
+    else:
+        active = state.get('daily_schedule', {})
+        if not active.get('enabled'):
+            print('沒有啟用中的每日排程。')
+            return
+        batch_id = active['batch_id']
+        batch = state['batches'][batch_id]
+        if continuation:
+            if os.environ.get('BATCH_ID') != batch_id or int(expected) != batch['step']:
+                print('過期或不同批次的接續工作，略過。')
+                return
+            if os.environ.get('EXPECTED_DATE') != local_now().date().isoformat():
+                print('跨日的舊接續工作，略過；由每日排程喚醒。')
+                return
+        rows = read_data(batch['start'], batch['end'])
+        fingerprint = hashlib.sha256(json.dumps([TARGET_URL, SHEET_NAME, rows], ensure_ascii=False).encode()).hexdigest()
+        if not rows or fingerprint != batch['fingerprint']:
+            raise RuntimeError('資料／網址／工作表已改變，停止自動續跑，請還原。')
+    try:
+        store.check_stop()
+    except StopRequested:
+        if batch['status'] in ('ready', 'waiting_window'):
+            batch['status'] = 'stopped'
+            store.save(state)
+        write_result(batch)
+        print('手動停止開關生效。')
+        return
+    if batch['status'] in ('complete', 'limit_reached'):
+        advance_round(batch)
+        store.save(state)
+    if batch['status'] == 'all_rounds_complete':
+        state['daily_schedule']['enabled'] = False
+        store.save(state)
+        write_result(batch)
+        return
+    if batch['status'] not in ('ready', 'waiting_window'):
+        write_result(batch)
+        print('不自動恢復需要人工核對或手動暫停的批次。')
+        return
+    clock = local_now()
+    if not continuation:
+        plan = day_plan(batch, clock)
+        store.save(state)
+        if scheduled and plan['started']:
+            print('今日已啟動，不建立第二條接續工作。')
+            return
+        if not plan['started']:
+            # 排程 08:15 先準備；短間隔檢查停止旗標，最多等到 09:00。
+            if scheduled:
+                while local_now() < datetime.fromisoformat(plan['start_at']):
+                    try:
+                        store.check_stop()
+                    except StopRequested:
+                        batch['status'] = 'stopped'
+                        store.save(state)
+                        write_result(batch)
+                        return
+                    time.sleep(min(20, max(0.1, (datetime.fromisoformat(plan['start_at']) - local_now()).total_seconds())))
+            if not start_day(batch, local_now()):
+                batch['status'] = 'waiting_window'
+                store.save(state)
+                write_result(batch)
+                print('已登記每日排程，等待下一個允許的早晨時段。')
+                return
+            store.save(state)
+    def guard():
+        store.check_stop()
+        check_daily_window(batch, local_now())
+    try:
+        guard()
+    except SchedulePause:
+        batch['status'] = 'waiting_window'
+        store.save(state)
+        write_result(batch)
+        return
+    except StopRequested:
+        batch['status'] = 'stopped'
+        store.save(state)
+        write_result(batch)
+        return
+    if batch['status'] == 'waiting_window':
+        batch['status'] = 'ready'
     from playwright.sync_api import sync_playwright
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
         try:
             page = browser.new_page()
-            if mode == 'check_ip':
-                ip = lookup_ip(page)
-                print('查詢到的出口 IP：', ip)
-                print('歷史紀錄中是否出現：', ip in state['used_ips'])
-                print('只查 IP：不操作目標網站、不接續下一次工作、不登記為已使用。')
-                return
-            start = int(os.environ.get('START_ROW', '2'))
-            end = int(os.environ.get('END_ROW', '0'))
-            retries = int(os.environ.get('MAX_RETRIES', '5'))
-            max_runs = int(os.environ.get('MAX_RUNS', '100'))
-            batch_id = os.environ.get('BATCH_ID', '').strip()
-            if not re.fullmatch(r'[A-Za-z0-9_-]{1,64}', batch_id):
-                raise ValueError('批次名稱只能含英數字、底線、連字號，1–64 字。')
-            if start < 2 or (end and end < start) or not 0 <= retries <= 20 or not 1 <= max_runs <= 500:
-                raise ValueError('列號／重試次數／總工作數設定不正確。')
-            rows = read_data(start, end)
-            fingerprint = hashlib.sha256(json.dumps([TARGET_URL, SHEET_NAME, rows],
-                                       ensure_ascii=False).encode()).hexdigest()
-            config = {'fingerprint': fingerprint, 'start': start, 'end': end,
-                      'max_retries': retries, 'max_runs': max_runs}
-            batch = state['batches'].get(batch_id)
-            if batch is None:
-                batch = dict(config, index=0, runs=0, retries=0, step=0, status='ready', events=[])
-                state['batches'][batch_id] = batch
-            elif any(batch.get(k) != v for k, v in config.items()):
-                raise RuntimeError('同批次設定或資料已改變，請還原設定；新資料請使用新批次名稱。')
-            expected = os.environ.get('EXPECTED_STEP', '').strip()
-            if expected and int(expected) != batch['step']:
-                print('過期的接續工作，略過。')
-                return
             def operate(row):
                 try:
-                    apply_row(page, row)
+                    apply_row(page, row, guard)
+                    batch['daily']['submitted'] = True
+                except StopRequested:
+                    raise
                 except Exception:
                     report_page(page, row[0])
                     raise
             more = process_attempt(state, batch, rows, lambda: lookup_ip(page), operate, store.save)
-            print('批次：', batch_id, '狀態：', batch['status'], '已處理筆數：', batch['index'])
-            Path('本次結果.json').write_text(json.dumps(batch, ensure_ascii=False, indent=2), encoding='utf-8')
-            if more:
-                time.sleep(15)
-                store.dispatch({'mode': 'execute', 'batch_id': batch_id,
-                    'start_row': str(start), 'end_row': str(end), 'max_retries': str(retries),
-                    'max_runs': str(max_runs), 'expected_step': str(batch['step'])})
-                print('已要求下一個獨立工作接續；請在 Actions 查看。')
-            elif batch['status'] != 'complete':
-                raise RuntimeError('批次已暫停：' + batch['status'] + '；請參閱 README。')
         finally:
             browser.close()
+    if batch['status'] in ('complete', 'limit_reached'):
+        more = advance_round(batch)
+        store.save(state)
+    if batch['status'] == 'all_rounds_complete':
+        state['daily_schedule']['enabled'] = False
+        store.save(state)
+    write_result(batch)
+    if more:
+        time.sleep(15)
+        try:
+            guard()
+        except SchedulePause:
+            batch['status'] = 'waiting_window'
+            store.save(state)
+            write_result(batch)
+            return
+        except StopRequested:
+            batch['status'] = 'stopped'
+            store.save(state)
+            write_result(batch)
+            return
+        store.dispatch(inputs_for(batch_id, batch))
+        print('已要求下一個工作接續。')
+    elif batch['status'] not in ('all_rounds_complete', 'stopped', 'waiting_window'):
+        raise RuntimeError('批次已暫停：' + batch['status'])
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except StopRequested as exc:
+        print(str(exc))
