@@ -1,9 +1,12 @@
-name: Single-row website operation
+name: Daily website test
 on:
+  schedule:
+    # UTC 00:15 = 台灣 08:15，提前準備並等待每日隨機開始時間。
+    - cron: '15 0 * * *'
   workflow_dispatch:
     inputs:
       mode:
-        description: 'check_ip 只查IP；execute 實際操作並自動接續'
+        description: 'check_ip 只查IP；execute 登記每日排程並依時段續跑'
         type: choice
         options: [check_ip, execute]
         default: check_ip
@@ -28,11 +31,20 @@ on:
         required: true
         type: string
       max_runs:
-        description: '整批總工作次數上限，含重複 IP（1–500）'
+        description: '每輪工作次數上限，含重複 IP（1–500）'
         default: '100'
         required: true
         type: string
+      max_rounds:
+        description: '總測試輪數（1–100）；每輪從起始列重跑'
+        default: '1'
+        required: true
+        type: string
       expected_step:
+        description: '自動接續使用，手動啟動請留空'
+        default: ''
+        type: string
+      expected_date:
         description: '自動接續使用，手動啟動請留空'
         default: ''
         type: string
@@ -45,7 +57,7 @@ concurrency:
 jobs:
   one-attempt:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 65
     steps:
       - uses: actions/checkout@v4
         with:
@@ -70,7 +82,9 @@ jobs:
           START_ROW: ${{ inputs.start_row }}
           END_ROW: ${{ inputs.end_row }}
           MAX_RETRIES: ${{ inputs.max_retries }}
+          MAX_ROUNDS: ${{ inputs.max_rounds }}
           MAX_RUNS: ${{ inputs.max_runs }}
+          EXPECTED_DATE: ${{ inputs.expected_date }}
           EXPECTED_STEP: ${{ inputs.expected_step }}
         run: python auto_form_fill.py
       - name: Save result and error screenshots
