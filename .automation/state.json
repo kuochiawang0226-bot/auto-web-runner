@@ -6571,7 +6571,7 @@
       "runs": 0,
       "retries": 0,
       "step": 0,
-      "status": "ready",
+      "status": "waiting_window",
       "events": [],
       "daily": {
         "date": "2026-10-23",
