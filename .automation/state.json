@@ -6571,13 +6571,13 @@
       "runs": 0,
       "retries": 0,
       "step": 0,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [],
       "daily": {
         "date": "2026-10-24",
         "start_at": "2026-10-24T08:39:45+08:00",
         "stop_at": "2026-10-24T20:55:18+08:00",
-        "started": false,
+        "started": true,
         "submitted": false
       }
     }
