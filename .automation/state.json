@@ -6574,9 +6574,9 @@
       "status": "waiting_window",
       "events": [],
       "daily": {
-        "date": "2026-10-23",
-        "start_at": "2026-10-23T08:47:18+08:00",
-        "stop_at": "2026-10-23T20:55:32+08:00",
+        "date": "2026-10-24",
+        "start_at": "2026-10-24T08:39:45+08:00",
+        "stop_at": "2026-10-24T20:55:18+08:00",
         "started": false,
         "submitted": false
       }
