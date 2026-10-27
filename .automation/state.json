@@ -7754,8 +7754,10 @@
         "date": "2026-10-27",
         "start_at": "2026-10-27T08:42:18+08:00",
         "stop_at": "2026-10-27T20:50:29+08:00",
-        "started": false,
-        "submitted": false
+        "started": true,
+        "submitted": false,
+        "manual_start": true,
+        "manual_start_at": "2026-10-27T10:53:30.351263+08:00"
       }
     }
   },
