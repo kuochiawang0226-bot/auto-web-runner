@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'check_ip 只查IP；execute 登記每日排程並依時段續跑'
+        description: 'execute 排程；execute_now 立即續跑；status 查進度；check_ip 查IP'
         type: choice
-        options: [check_ip, execute]
+        options: [check_ip, execute, execute_now, status]
         default: check_ip
       batch_id:
         description: '批次名稱（續跑沿用；新資料才換名稱）'
@@ -86,7 +86,7 @@ jobs:
           MAX_RUNS: ${{ inputs.max_runs }}
           EXPECTED_DATE: ${{ inputs.expected_date }}
           EXPECTED_STEP: ${{ inputs.expected_step }}
-        run: python auto_form_fill.py
+        run: python -u auto_form_fill.py
       - name: Save result and error screenshots
         if: always()
         uses: actions/upload-artifact@v4
