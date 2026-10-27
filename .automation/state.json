@@ -7751,11 +7751,11 @@
         }
       ],
       "daily": {
-        "date": "2026-10-24",
-        "start_at": "2026-10-24T08:39:45+08:00",
-        "stop_at": "2026-10-24T20:55:18+08:00",
-        "started": true,
-        "submitted": true
+        "date": "2026-10-27",
+        "start_at": "2026-10-27T08:42:18+08:00",
+        "stop_at": "2026-10-27T20:50:29+08:00",
+        "started": false,
+        "submitted": false
       }
     }
   },
