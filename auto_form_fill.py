@@ -208,10 +208,28 @@ def check_daily_window(batch, clock):
     plan = batch.get('daily', {})
     if plan.get('date') != clock.date().isoformat() or not plan.get('started'):
         raise SchedulePause('等待今日排程啟動。')
-    if not datetime.fromisoformat(plan['start_at']) <= clock < datetime.fromisoformat(plan['stop_at']):
+    earliest = (clock.replace(hour=8, minute=30, second=0, microsecond=0)
+                if plan.get('manual_start') else datetime.fromisoformat(plan['start_at']))
+    if not earliest <= clock < datetime.fromisoformat(plan['stop_at']):
         raise SchedulePause('已到休息時間，保留列號與輪次。')
-    if not plan.get('submitted') and clock >= clock.replace(hour=9, minute=0, second=0, microsecond=0):
+    if not plan.get('submitted') and not plan.get('manual_start') and clock >= clock.replace(hour=9, minute=0, second=0, microsecond=0):
         raise SchedulePause('今天尚未送出且已超過 09:00，等待明日。')
+
+
+
+def enable_manual_start(batch, clock):
+    """只放寬當日開始時段；不改 index、round、runs、step 或錯誤狀態。"""
+    if batch['status'] not in ('ready', 'waiting_window'):
+        raise RuntimeError('此狀態不可立即續跑：' + batch['status'])
+    plan = day_plan(batch, clock)
+    earliest = clock.replace(hour=8, minute=30, second=0, microsecond=0)
+    if not earliest <= clock < datetime.fromisoformat(plan['stop_at']):
+        raise SchedulePause('立即續跑僅允許台灣時間 08:30 至今日停止時間之間。')
+    plan['manual_start'] = True
+    plan['manual_start_at'] = clock.isoformat()
+    plan['started'] = True
+    batch['status'] = 'ready'
+    batch.pop('pause_reason', None)
 
 
 def advance_round(batch):
@@ -395,7 +413,8 @@ def process_attempt(state, batch, rows, get_ip, operate, save):
     save(state)
     try:
         operate(row)
-    except SchedulePause:
+    except SchedulePause as exc:
+        batch['pause_reason'] = str(exc)
         event['result'] = 'paused_before_submit'
         batch['status'] = 'waiting_window'
         # 尚未送出，歸還本輪預算，確保隔日仍從同一列續做。step 不回退。
@@ -430,6 +449,10 @@ def write_result(batch):
     Path('本次結果.json').write_text(json.dumps(batch, ensure_ascii=False, indent=2), encoding='utf-8')
     print('輪次：', batch['round'], '/', batch['max_rounds'],
           '本輪已處理：', batch['index'], '累計：', batch['total_processed'], '狀態：', batch['status'])
+    if batch.get('pause_reason'):
+        print('暫停原因：', batch['pause_reason'])
+    if batch.get('daily', {}).get('manual_start'):
+        print('今日由手動立即續跑啟動；晚間停止時間不變，隔日恢復原排程。')
     if batch.get('daily'):
         print('今日台灣時間：', batch['daily']['start_at'], '～', batch['daily']['stop_at'])
 
@@ -459,11 +482,30 @@ def main():
         raise RuntimeError('請透過 GitHub Actions 執行。')
     scheduled = os.environ.get('GITHUB_EVENT_NAME') == 'schedule'
     mode = 'schedule' if scheduled else os.environ.get('MODE', 'check_ip')
-    if mode not in ('check_ip', 'execute', 'schedule'):
+    if mode not in ('check_ip', 'execute', 'execute_now', 'status', 'schedule'):
         raise ValueError('未知模式')
     store = GitHubStore()
     state = store.load()
     state['used_ips'] = sorted(set(state['used_ips']) | legacy_ips('送出紀錄.csv'))
+    if mode == 'status':
+        batch_id = os.environ.get('BATCH_ID', '').strip() or state.get('daily_schedule', {}).get('batch_id')
+        batch = state['batches'].get(batch_id)
+        print('每日排程設定：', state.get('daily_schedule', {}))
+        if batch is None:
+            print('找不到指定批次，請確認 batch_id。')
+            return
+        print('批次：', batch_id)
+        write_result(batch)
+        print('原設定：', {k: batch.get(k) for k in ('start', 'end', 'max_retries', 'max_runs', 'max_rounds')})
+        if batch['status'] != 'all_rounds_complete':
+            print('下一筆 Excel 列號：', batch['start'] + batch['index'])
+        try:
+            store.check_stop()
+            print('STOP 檔案：不存在')
+        except StopRequested:
+            print('STOP 檔案：存在，會阻止送出')
+        print('僅檢視：未操作網站、未更改進度、未接續下一個 Action。')
+        return
     if mode == 'check_ip':
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
@@ -479,6 +521,8 @@ def main():
         raise ValueError('請先設定 TARGET_URL Secret（HTTPS 網址）。')
     expected = os.environ.get('EXPECTED_STEP', '').strip() if not scheduled else ''
     continuation = bool(expected)
+    if mode == 'execute_now' and (continuation or os.environ.get('EXPECTED_DATE', '').strip()):
+        raise ValueError('立即續跑請將 expected_step 與 expected_date 留空。')
     registration = not scheduled and not continuation
     if registration:
         batch_id = os.environ.get('BATCH_ID', '').strip()
@@ -498,6 +542,8 @@ def main():
                       fingerprint=hashlib.sha256(json.dumps([TARGET_URL, SHEET_NAME, rows], ensure_ascii=False).encode()).hexdigest())
         batch = state['batches'].get(batch_id)
         if batch is None:
+            if mode == 'execute_now':
+                raise ValueError('立即續跑僅適用已登記批次；請填原批次名稱，避免從頭重做。')
             batch = dict(config, round=1, total_processed=0, index=0, runs=0, retries=0, step=0, status='ready', events=[])
             state['batches'][batch_id] = batch
         elif any(batch.get(k) != v for k, v in config.items()):
@@ -555,6 +601,17 @@ def main():
     if not continuation:
         plan = day_plan(batch, clock)
         store.save(state)
+        if mode == 'execute_now':
+            try:
+                enable_manual_start(batch, clock)
+            except SchedulePause as exc:
+                batch['pause_reason'] = str(exc)
+                batch['status'] = 'waiting_window'
+                store.save(state)
+                write_result(batch)
+                return
+            store.save(state)
+            print('立即續跑：沿用原進度，今日略過早上開始限制。')
         if scheduled and plan['started']:
             print('今日已啟動，不建立第二條接續工作。')
             return
@@ -572,6 +629,7 @@ def main():
                     time.sleep(min(20, max(0.1, (datetime.fromisoformat(plan['start_at']) - local_now()).total_seconds())))
             if not start_day(batch, local_now()):
                 batch['status'] = 'waiting_window'
+                batch['pause_reason'] = '尚未到今日開始時間，或已錯過 09:00 的首次啟動截止時間。'
                 store.save(state)
                 write_result(batch)
                 print('已登記每日排程，等待下一個允許的早晨時段。')
@@ -582,7 +640,8 @@ def main():
         check_daily_window(batch, local_now())
     try:
         guard()
-    except SchedulePause:
+    except SchedulePause as exc:
+        batch['pause_reason'] = str(exc)
         batch['status'] = 'waiting_window'
         store.save(state)
         write_result(batch)
@@ -594,6 +653,7 @@ def main():
         return
     if batch['status'] == 'waiting_window':
         batch['status'] = 'ready'
+    batch.pop('pause_reason', None)
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
         browser = pw.chromium.launch(headless=True)
@@ -622,7 +682,8 @@ def main():
         time.sleep(15)
         try:
             guard()
-        except SchedulePause:
+        except SchedulePause as exc:
+            batch['pause_reason'] = str(exc)
             batch['status'] = 'waiting_window'
             store.save(state)
             write_result(batch)
