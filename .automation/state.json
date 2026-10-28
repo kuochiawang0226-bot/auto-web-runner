@@ -9793,13 +9793,11 @@
         }
       ],
       "daily": {
-        "date": "2026-10-27",
-        "start_at": "2026-10-27T08:42:18+08:00",
-        "stop_at": "2026-10-27T20:50:29+08:00",
-        "started": true,
-        "submitted": true,
-        "manual_start": true,
-        "manual_start_at": "2026-10-27T17:51:23.976884+08:00"
+        "date": "2026-10-28",
+        "start_at": "2026-10-28T08:30:48+08:00",
+        "stop_at": "2026-10-28T20:55:43+08:00",
+        "started": false,
+        "submitted": false
       },
       "pause_reason": "已到休息時間，保留列號與輪次。"
     }
