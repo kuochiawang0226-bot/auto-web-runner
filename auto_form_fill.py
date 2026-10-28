@@ -213,7 +213,7 @@ def check_daily_window(batch, clock):
     if not earliest <= clock < datetime.fromisoformat(plan['stop_at']):
         raise SchedulePause('已到休息時間，保留列號與輪次。')
     if not plan.get('submitted') and not plan.get('manual_start') and clock >= clock.replace(hour=9, minute=30, second=0, microsecond=0):
-        raise SchedulePause('今天尚未送出且已超過 09:00，等待明日。')
+        raise SchedulePause('今天尚未送出且已超過 09:30，等待明日。')
 
 
 
