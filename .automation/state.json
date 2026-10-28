@@ -6917,7 +6917,7 @@
       "runs": 359,
       "retries": 0,
       "step": 359,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -9796,10 +9796,11 @@
         "date": "2026-10-28",
         "start_at": "2026-10-28T08:30:48+08:00",
         "stop_at": "2026-10-28T20:55:43+08:00",
-        "started": false,
-        "submitted": false
-      },
-      "pause_reason": "尚未到今日開始時間，或已錯過 09:00 的首次啟動截止時間。"
+        "started": true,
+        "submitted": false,
+        "manual_start": true,
+        "manual_start_at": "2026-10-28T13:10:16.596827+08:00"
+      }
     }
   },
   "daily_schedule": {
