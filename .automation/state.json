@@ -7261,10 +7261,10 @@
       "round": 2,
       "total_processed": 691,
       "index": 237,
-      "runs": 255,
+      "runs": 254,
       "retries": 0,
       "step": 728,
-      "status": "in_flight",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -13087,7 +13087,7 @@
           "time": "2026-10-28T12:55:40.132416+00:00",
           "row": 239,
           "run_id": "40691806634",
-          "result": "in_flight",
+          "result": "paused_before_submit",
           "ip": "172.214.47.24"
         }
       ],
@@ -13099,7 +13099,8 @@
         "submitted": true,
         "manual_start": true,
         "manual_start_at": "2026-10-28T13:10:16.596827+08:00"
-      }
+      },
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
