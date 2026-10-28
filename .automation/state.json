@@ -9799,7 +9799,7 @@
         "started": false,
         "submitted": false
       },
-      "pause_reason": "已到休息時間，保留列號與輪次。"
+      "pause_reason": "尚未到今日開始時間，或已錯過 09:00 的首次啟動截止時間。"
     }
   },
   "daily_schedule": {
