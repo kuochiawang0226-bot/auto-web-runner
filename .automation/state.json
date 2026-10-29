@@ -7330,12 +7330,12 @@
       "max_rounds": 8,
       "fingerprint": "09f30b95766975e2a2c074a997094f09899be3417139ef93629225568f34d539",
       "round": 2,
-      "total_processed": 761,
-      "index": 307,
+      "total_processed": 762,
+      "index": 308,
       "runs": 330,
       "retries": 0,
-      "step": 804,
-      "status": "in_flight",
+      "step": 805,
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -13768,6 +13768,15 @@
           "run_id": "40811566726",
           "result": "in_flight",
           "ip": "52.161.46.114"
+        },
+        {
+          "round": 2,
+          "time": "2026-10-29T03:42:04.302120+00:00",
+          "row": 309,
+          "run_id": "40813567221",
+          "ip": "",
+          "result": "skipped_uncertain",
+          "error": "恢復中斷批次，原狀態：in_flight"
         }
       ],
       "daily": {
@@ -13778,7 +13787,17 @@
         "submitted": true,
         "manual_start": true,
         "manual_start_at": "2026-10-29T09:23:54.895877+08:00"
-      }
+      },
+      "skipped_rows": [
+        {
+          "round": 2,
+          "row": 309,
+          "reason": "恢復中斷批次，原狀態：in_flight",
+          "time": "2026-10-29T03:42:04.302147+00:00",
+          "run_id": "40813567221"
+        }
+      ],
+      "total_skipped": 1
     }
   },
   "daily_schedule": {
