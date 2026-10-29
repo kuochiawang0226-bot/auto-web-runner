@@ -467,7 +467,7 @@ def inputs_for(batch_id, batch):
 
 def start_day(batch, clock):
     plan = day_plan(batch, clock)
-    if clock >= clock.replace(hour=9, minute=0, second=0, microsecond=0):
+    if clock >= clock.replace(hour=9, minute=30, second=0, microsecond=0):
         return False
     if clock < datetime.fromisoformat(plan['start_at']):
         return False
@@ -629,7 +629,7 @@ def main():
                     time.sleep(min(20, max(0.1, (datetime.fromisoformat(plan['start_at']) - local_now()).total_seconds())))
             if not start_day(batch, local_now()):
                 batch['status'] = 'waiting_window'
-                batch['pause_reason'] = '尚未到今日開始時間，或已錯過 09:00 的首次啟動截止時間。'
+                batch['pause_reason'] = '尚未到今日開始時間，或已錯過 09:30 的首次啟動截止時間。'
                 store.save(state)
                 write_result(batch)
                 print('已登記每日排程，等待下一個允許的早晨時段。')
