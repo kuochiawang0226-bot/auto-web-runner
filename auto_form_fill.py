@@ -358,12 +358,26 @@ def lookup_ip(page):
 
 
 def apply_row(page, row, check_stop=lambda: None):
+    started = time.monotonic()
+    target_seconds = 8 + secrets.randbelow(32001) / 1000
+
     row_no, a, b = row
+    print(f'第 {row_no} 列：本筆目標提交時間 {target_seconds:.1f} 秒',
+          flush=True)
+
     page.goto(TARGET_URL, timeout=90000)
     page.wait_for_load_state('networkidle', timeout=60000)
     choose(page, 0, DROPDOWN1_OPTION, DROPDOWN1_SELECTOR)
     choose(page, 1, a, DROPDOWN2_SELECTOR)
     fill_field(page, b)
+
+    while True:
+        check_stop()
+        remaining = target_seconds - (time.monotonic() - started)
+        if remaining <= 0:
+            break
+        time.sleep(min(2, remaining))
+
     check_stop()
     click_submit(page)
     time.sleep(WAIT_AFTER_SUBMIT)
