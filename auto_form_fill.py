@@ -310,14 +310,60 @@ class GitHubStore:
         return state
 
     def save(self, state):
+        import http.client
+
+        def temporary(exc):
+            if isinstance(exc, urllib.error.HTTPError):
+                return exc.code in (408, 409, 429, 500, 502, 503, 504)
+            return isinstance(exc, (
+                urllib.error.URLError, TimeoutError, ConnectionError,
+                http.client.IncompleteRead, http.client.RemoteDisconnected))
+
         raw = json.dumps(state, ensure_ascii=False, indent=2).encode()
-        body = {'message': 'Save automation progress', 'branch': self.branch,
-                'content': base64.b64encode(raw).decode()}
-        if self.sha:
-            body['sha'] = self.sha
-        # 使用 SHA 防止覆蓋其他工作的更新；失敗就停止，不自動覆寫。
-        response = self.request('PUT', '/contents/' + STATE_PATH, body)
-        self.sha = response['content']['sha']
+        original_sha = self.sha
+        body = {
+            'message': 'Save automation progress',
+            'branch': self.branch,
+            'content': base64.b64encode(raw).decode()
+        }
+        if original_sha:
+            body['sha'] = original_sha
+
+        for attempt in range(5):
+            try:
+                response = self.request('PUT', '/contents/' + STATE_PATH, body)
+                self.sha = response['content']['sha']
+                return
+            except Exception as exc:
+                if not temporary(exc):
+                    raise
+                print(f'進度儲存未確認，第 {attempt + 1}/5 次；準備核對遠端。',
+                      flush=True)
+
+            # 必須成功讀回並核對，才允許再次 PUT。
+            for read_attempt in range(5):
+                time.sleep(min(2 ** (read_attempt + 1), 16))
+                self.sha = None
+                try:
+                    remote = self.load()
+                    remote_sha = self.sha
+                    break
+                except Exception as exc:
+                    if not temporary(exc) or read_attempt == 4:
+                        raise
+                finally:
+                    self.sha = original_sha
+
+            if remote == state and remote_sha is not None:
+                self.sha = remote_sha
+                print('已確認進度寫入成功，不重做網站操作。', flush=True)
+                return
+            if remote_sha != original_sha:
+                raise RuntimeError('遠端進度已被其他工作更新，停止以免覆寫。')
+            if attempt == 4:
+                raise RuntimeError('進度儲存重試仍失敗，請查詢狀態並核對網站結果。')
+            time.sleep(min(2 ** (attempt + 1), 16))
+
 
     def check_stop(self):
         from urllib.parse import quote
@@ -383,6 +429,33 @@ def apply_row(page, row, check_stop=lambda: None):
     time.sleep(WAIT_AFTER_SUBMIT)
 
 
+def skip_current(batch, rows, reason, event=None):
+    """跳過只代表已消耗此列，不代表網站成功收到。"""
+    if not 0 <= batch['index'] < len(rows):
+        raise RuntimeError('無法跳過：目前列號超出資料範圍。')
+    row_no = rows[batch['index']][0]
+    if event is None:
+        event = {'round': batch['round'], 'time': now(), 'row': row_no,
+                 'run_id': os.environ.get('GITHUB_RUN_ID', ''), 'ip': ''}
+        batch['events'].append(event)
+        batch['step'] += 1  # 舊接續請求失效；不重複扣除原嘗試的 runs。
+    event['result'] = 'skipped_uncertain'
+    event['error'] = reason
+    batch.setdefault('skipped_rows', []).append({
+        'round': batch['round'], 'row': row_no, 'reason': reason,
+        'time': now(), 'run_id': event['run_id']})
+    batch['total_skipped'] = batch.get('total_skipped', 0) + 1
+    batch['index'] += 1
+    batch['total_processed'] += 1
+    batch['retries'] = 0
+    batch.pop('pause_reason', None)
+    batch['status'] = 'complete' if batch['index'] == len(rows) else 'ready'
+    if batch['status'] == 'ready' and batch['runs'] >= batch['max_runs']:
+        batch['status'] = 'limit_reached'
+    print(f'第 {row_no} 列已跳過（不代表送出成功）：{reason}', flush=True)
+    return batch['status'] == 'ready'
+
+
 def process_attempt(state, batch, rows, get_ip, operate, save):
     """一次只嘗試一個 IP；回傳 True 才接續新工作。可離線測試。"""
     if batch['status'] != 'ready':
@@ -406,16 +479,18 @@ def process_attempt(state, batch, rows, get_ip, operate, save):
     except Exception as exc:
         event['result'] = 'ip_lookup_failed'
         event['error'] = str(exc)
-        batch['status'] = 'ip_lookup_failed'
+        more = skip_current(batch, rows, 'IP 查詢失敗：' + str(exc), event)
         save(state)
-        return False
+        return more
     event['ip'] = ip
     if ip in state['used_ips']:
         event['result'] = 'duplicate_ip'
         batch['retries'] += 1
         # max_retries=5：首次重複後最多另外啟動 5 次。
         if batch['retries'] > batch['max_retries']:
-            batch['status'] = 'retry_limit'
+            more = skip_current(batch, rows, '重複 IP 重試次數已達上限', event)
+            save(state)
+            return more
         elif batch['runs'] >= batch['max_runs']:
             batch['status'] = 'limit_reached'
         save(state)
@@ -444,9 +519,9 @@ def process_attempt(state, batch, rows, get_ip, operate, save):
     except Exception as exc:
         event['result'] = 'operation_uncertain'
         event['error'] = str(exc)
-        batch['status'] = 'operation_uncertain'
+        more = skip_current(batch, rows, '網站操作失敗或結果不確定：' + str(exc), event)
         save(state)
-        return False
+        return more
     event['result'] = '操作完成（沿用原程式判定）'
     batch['index'] += 1
     batch['total_processed'] += 1
@@ -463,6 +538,7 @@ def write_result(batch):
     Path('本次結果.json').write_text(json.dumps(batch, ensure_ascii=False, indent=2), encoding='utf-8')
     print('輪次：', batch['round'], '/', batch['max_rounds'],
           '本輪已處理：', batch['index'], '累計：', batch['total_processed'], '狀態：', batch['status'])
+    print('累計跳過：', batch.get('total_skipped', 0), '（已處理筆數包含跳過，不等於成功送出）')
     if batch.get('pause_reason'):
         print('暫停原因：', batch['pause_reason'])
     if batch.get('daily', {}).get('manual_start'):
@@ -568,7 +644,7 @@ def main():
         store.check_stop()
         if batch['status'] == 'stopped':
             batch['status'] = 'ready'
-        if batch['status'] not in ('ready', 'waiting_window', 'complete', 'limit_reached', 'all_rounds_complete'):
+        if batch['status'] not in ('ready', 'waiting_window', 'complete', 'limit_reached', 'all_rounds_complete', 'in_flight', 'operation_uncertain', 'ip_lookup_failed', 'retry_limit'):
             raise RuntimeError('批次需人工核對：' + batch['status'])
         state['daily_schedule'] = {'batch_id': batch_id, 'enabled': batch['status'] != 'all_rounds_complete'}
         store.save(state)
@@ -599,6 +675,10 @@ def main():
         write_result(batch)
         print('手動停止開關生效。')
         return
+    if batch['status'] in ('in_flight', 'operation_uncertain', 'ip_lookup_failed', 'retry_limit'):
+        previous_status = batch['status']
+        skip_current(batch, rows, '恢復中斷批次，原狀態：' + previous_status)
+        store.save(state)
     if batch['status'] in ('complete', 'limit_reached'):
         advance_round(batch)
         store.save(state)
@@ -630,7 +710,7 @@ def main():
             print('今日已啟動，不建立第二條接續工作。')
             return
         if not plan['started']:
-            # 排程 08:15 先準備；短間隔檢查停止旗標，最多等到 09:00。
+            # 排程 08:15 先準備；短間隔檢查停止旗標，最多等到 09:30。
             if scheduled:
                 while local_now() < datetime.fromisoformat(plan['start_at']):
                     try:
