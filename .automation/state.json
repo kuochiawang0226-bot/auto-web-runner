@@ -8125,7 +8125,7 @@
       "runs": 264,
       "retries": 1,
       "step": 1686,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -21621,7 +21621,7 @@
         "date": "2026-10-31",
         "start_at": "2026-10-31T08:35:06+08:00",
         "stop_at": "2026-10-31T20:53:37+08:00",
-        "started": false,
+        "started": true,
         "submitted": false
       },
       "skipped_rows": [
