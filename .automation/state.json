@@ -8570,7 +8570,7 @@
       "runs": 316,
       "retries": 0,
       "step": 2211,
-      "status": "ready",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -26278,7 +26278,8 @@
           "run_id": "40813567221"
         }
       ],
-      "total_skipped": 1
+      "total_skipped": 1,
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
