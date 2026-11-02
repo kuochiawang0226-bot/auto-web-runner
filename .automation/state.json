@@ -26293,8 +26293,10 @@
         "date": "2026-11-02",
         "start_at": "2026-11-02T08:57:52+08:00",
         "stop_at": "2026-11-02T20:44:16+08:00",
-        "started": false,
-        "submitted": false
+        "started": true,
+        "submitted": false,
+        "manual_start": true,
+        "manual_start_at": "2026-11-02T09:06:53.208317+08:00"
       },
       "skipped_rows": [
         {
