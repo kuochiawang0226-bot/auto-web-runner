@@ -9102,12 +9102,12 @@
       "max_rounds": 8,
       "fingerprint": "09f30b95766975e2a2c074a997094f09899be3417139ef93629225568f34d539",
       "round": 7,
-      "total_processed": 2532,
-      "index": 6,
+      "total_processed": 2533,
+      "index": 7,
       "runs": 9,
       "retries": 0,
       "step": 2850,
-      "status": "in_flight",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -31907,7 +31907,7 @@
           "time": "2026-11-03T04:33:07.868573+00:00",
           "row": 8,
           "run_id": "41578710701",
-          "result": "in_flight",
+          "result": "操作完成（沿用原程式判定）",
           "ip": "20.169.69.35"
         }
       ],
