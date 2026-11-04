@@ -9494,13 +9494,13 @@
       "max_runs": 473,
       "max_rounds": 8,
       "fingerprint": "09f30b95766975e2a2c074a997094f09899be3417139ef93629225568f34d539",
-      "round": 7,
+      "round": 8,
       "total_processed": 2926,
-      "index": 400,
-      "runs": 473,
+      "index": 0,
+      "runs": 0,
       "retries": 0,
       "step": 3314,
-      "status": "limit_reached",
+      "status": "ready",
       "events": [
         {
           "round": 1,
