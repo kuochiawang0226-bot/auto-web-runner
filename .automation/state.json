@@ -38093,7 +38093,7 @@
         "date": "2026-11-05",
         "start_at": "2026-11-05T08:56:22+08:00",
         "stop_at": "2026-11-05T23:55:39+08:00",
-        "started": false,
+        "started": true,
         "submitted": false
       },
       "skipped_rows": [
