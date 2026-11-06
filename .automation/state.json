@@ -40848,7 +40848,9 @@
         "start_at": "2026-11-06T08:31:17+08:00",
         "stop_at": "2026-11-06T23:32:59+08:00",
         "started": true,
-        "submitted": true
+        "submitted": true,
+        "manual_start": true,
+        "manual_start_at": "2026-11-06T17:40:46.727991+08:00"
       }
     }
   },
