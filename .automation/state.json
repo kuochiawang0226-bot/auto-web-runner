@@ -40220,19 +40220,19 @@
       "max_rounds": 20,
       "fingerprint": "09f30b95766975e2a2c074a997094f09899be3417139ef93629225568f34d539",
       "round": 1,
-      "total_processed": 0,
-      "index": 0,
+      "total_processed": 1,
+      "index": 1,
       "runs": 1,
       "retries": 0,
       "step": 1,
-      "status": "in_flight",
+      "status": "ready",
       "events": [
         {
           "round": 1,
           "time": "2026-11-06T01:04:43.526659+00:00",
           "row": 2,
           "run_id": "42141270170",
-          "result": "in_flight",
+          "result": "操作完成（沿用原程式判定）",
           "ip": "40.124.79.129"
         }
       ],
@@ -40241,7 +40241,7 @@
         "start_at": "2026-11-06T08:31:17+08:00",
         "stop_at": "2026-11-06T23:32:59+08:00",
         "started": true,
-        "submitted": false
+        "submitted": true
       }
     }
   },
