@@ -41394,9 +41394,9 @@
       "round": 3,
       "total_processed": 1175,
       "index": 331,
-      "runs": 414,
-      "retries": 0,
-      "step": 1414,
+      "runs": 415,
+      "retries": 1,
+      "step": 1415,
       "status": "ready",
       "events": [
         {
@@ -52712,6 +52712,14 @@
           "result": "skipped_uncertain",
           "ip": "",
           "error": "IP 查詢失敗：IP 查詢服務回應失敗"
+        },
+        {
+          "round": 3,
+          "time": "2026-11-08T15:25:22.821404+00:00",
+          "row": 333,
+          "run_id": "42494661731",
+          "result": "duplicate_ip",
+          "ip": "57.154.167.147"
         }
       ],
       "daily": {
