@@ -41466,13 +41466,13 @@
       "max_runs": 500,
       "max_rounds": 20,
       "fingerprint": "09f30b95766975e2a2c074a997094f09899be3417139ef93629225568f34d539",
-      "round": 3,
+      "round": 4,
       "total_processed": 1250,
-      "index": 406,
-      "runs": 500,
+      "index": 0,
+      "runs": 0,
       "retries": 0,
       "step": 1500,
-      "status": "limit_reached",
+      "status": "ready",
       "events": [
         {
           "round": 1,
