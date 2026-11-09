@@ -41914,7 +41914,7 @@
       "runs": 23,
       "retries": 1,
       "step": 2023,
-      "status": "ready",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -58126,7 +58126,8 @@
           "run_id": "42494556507"
         }
       ],
-      "total_skipped": 2
+      "total_skipped": 2,
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
