@@ -199,7 +199,7 @@ def day_plan(batch, clock):
         batch['daily'] = {
             'date': day,
             'start_at': (base + timedelta(hours=8, minutes=30, seconds=secrets.randbelow(1800))).isoformat(),
-            'stop_at': (base + timedelta(hours=14, minutes=30, seconds=secrets.randbelow(1801))).isoformat(),
+            'stop_at': (base + timedelta(hours=18, minutes=30, seconds=secrets.randbelow(1801))).isoformat(),
             'started': False, 'submitted': False}
     return batch['daily']
 
