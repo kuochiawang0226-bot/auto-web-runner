@@ -58104,11 +58104,11 @@
         }
       ],
       "daily": {
-        "date": "2026-11-09",
-        "start_at": "2026-11-09T08:38:13+08:00",
-        "stop_at": "2026-11-09T23:45:58+08:00",
-        "started": true,
-        "submitted": true
+        "date": "2026-11-10",
+        "start_at": "2026-11-10T08:52:24+08:00",
+        "stop_at": "2026-11-10T23:37:20+08:00",
+        "started": false,
+        "submitted": false
       },
       "skipped_rows": [
         {
