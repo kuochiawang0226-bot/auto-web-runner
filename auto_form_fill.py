@@ -623,7 +623,7 @@ def main():
         retries = int(os.environ.get('MAX_RETRIES') or '5')
         max_runs = int(os.environ.get('MAX_RUNS') or '100')
         rounds = int(os.environ.get('MAX_ROUNDS') or '1')
-        if start < 2 or (end and end < start) or not 0 <= retries <= 20 or not 1 <= max_runs <= 500 or not 1 <= rounds <= 100:
+        if start < 2 or (end and end < start) or not 0 <= retries <= 20 or not 1 <= max_runs <= 5000 or not 1 <= rounds <= 100:
             raise ValueError('列號／上限／輪數設定不正確。')
         rows = read_data(start, end)
         if not rows:
