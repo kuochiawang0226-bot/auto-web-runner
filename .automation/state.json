@@ -58788,16 +58788,17 @@
       "runs": 0,
       "retries": 0,
       "step": 0,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [],
       "daily": {
         "date": "2026-11-10",
         "start_at": "2026-11-10T08:39:04+08:00",
         "stop_at": "2026-11-10T14:57:42+08:00",
-        "started": false,
-        "submitted": false
-      },
-      "pause_reason": "尚未到今日開始時間，或已錯過 09:30 的首次啟動截止時間。"
+        "started": true,
+        "submitted": false,
+        "manual_start": true,
+        "manual_start_at": "2026-11-10T11:41:45.695405+08:00"
+      }
     }
   },
   "daily_schedule": {
