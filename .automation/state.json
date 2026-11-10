@@ -58789,7 +58789,14 @@
       "retries": 0,
       "step": 0,
       "status": "ready",
-      "events": []
+      "events": [],
+      "daily": {
+        "date": "2026-11-10",
+        "start_at": "2026-11-10T08:39:04+08:00",
+        "stop_at": "2026-11-10T14:57:42+08:00",
+        "started": false,
+        "submitted": false
+      }
     }
   },
   "daily_schedule": {
