@@ -31,8 +31,8 @@ on:
         required: true
         type: string
       max_runs:
-        description: '每輪工作次數上限，含重複 IP（1–500）'
-        default: '100'
+        description: '每輪工作次數上限，含重複 IP（1–5000）'
+        default: '5000'
         required: true
         type: string
       max_rounds:
