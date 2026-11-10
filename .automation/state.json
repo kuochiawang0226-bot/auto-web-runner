@@ -58774,10 +58774,26 @@
         }
       ],
       "total_skipped": 2
+    },
+    "1110": {
+      "start": 2,
+      "end": 0,
+      "max_retries": 20,
+      "max_runs": 2000,
+      "max_rounds": 3,
+      "fingerprint": "828f28e486c455600bdc1f02e0c4f3651735c34ef0a5bbae26e06722168923af",
+      "round": 1,
+      "total_processed": 0,
+      "index": 0,
+      "runs": 0,
+      "retries": 0,
+      "step": 0,
+      "status": "ready",
+      "events": []
     }
   },
   "daily_schedule": {
-    "batch_id": "1106",
-    "enabled": false
+    "batch_id": "1110",
+    "enabled": true
   }
 }
