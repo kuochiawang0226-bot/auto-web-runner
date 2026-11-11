@@ -59678,13 +59678,11 @@
         }
       ],
       "daily": {
-        "date": "2026-11-10",
-        "start_at": "2026-11-10T08:39:04+08:00",
-        "stop_at": "2026-11-10T14:57:42+08:00",
-        "started": true,
-        "submitted": true,
-        "manual_start": true,
-        "manual_start_at": "2026-11-10T11:41:45.695405+08:00"
+        "date": "2026-11-11",
+        "start_at": "2026-11-11T08:47:50+08:00",
+        "stop_at": "2026-11-11T18:42:07+08:00",
+        "started": false,
+        "submitted": false
       },
       "pause_reason": "已到休息時間，保留列號與輪次。"
     }
