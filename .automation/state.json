@@ -58866,7 +58866,7 @@
       "runs": 101,
       "retries": 0,
       "step": 101,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -59681,7 +59681,7 @@
         "date": "2026-11-11",
         "start_at": "2026-11-11T08:47:50+08:00",
         "stop_at": "2026-11-11T18:42:07+08:00",
-        "started": false,
+        "started": true,
         "submitted": false
       },
       "pause_reason": "已到休息時間，保留列號與輪次。"
