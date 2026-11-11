@@ -59194,7 +59194,7 @@
       "runs": 503,
       "retries": 1,
       "step": 503,
-      "status": "ready",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -63227,7 +63227,8 @@
         "stop_at": "2026-11-11T18:42:07+08:00",
         "started": true,
         "submitted": true
-      }
+      },
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
