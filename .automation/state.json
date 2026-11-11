@@ -58863,9 +58863,9 @@
       "round": 1,
       "total_processed": 78,
       "index": 78,
-      "runs": 101,
-      "retries": 0,
-      "step": 101,
+      "runs": 102,
+      "retries": 1,
+      "step": 102,
       "status": "ready",
       "events": [
         {
@@ -59675,6 +59675,14 @@
           "run_id": "42771808451",
           "result": "操作完成（沿用原程式判定）",
           "ip": "20.49.13.184"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-11T01:09:01.949611+00:00",
+          "row": 80,
+          "run_id": "42936723426",
+          "result": "duplicate_ip",
+          "ip": "172.183.149.67"
         }
       ],
       "daily": {
@@ -59683,8 +59691,7 @@
         "stop_at": "2026-11-11T18:42:07+08:00",
         "started": true,
         "submitted": false
-      },
-      "pause_reason": "已到休息時間，保留列號與輪次。"
+      }
     }
   },
   "daily_schedule": {
