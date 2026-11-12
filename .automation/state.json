@@ -1599,6 +1599,7 @@
     "172.184.213.228",
     "172.184.213.247",
     "172.184.214.208",
+    "172.184.214.213",
     "172.184.214.228",
     "172.184.219.152",
     "172.184.219.155",
@@ -7092,8 +7093,7 @@
     "94.230.208.148",
     "95.128.43.164",
     "95.211.239.220",
-    "98.89.53.239",
-    "172.184.214.213"
+    "98.89.53.239"
   ],
   "batches": {
     "test-001": {
@@ -59406,11 +59406,11 @@
       "max_rounds": 3,
       "fingerprint": "828f28e486c455600bdc1f02e0c4f3651735c34ef0a5bbae26e06722168923af",
       "round": 1,
-      "total_processed": 623,
-      "index": 623,
-      "runs": 768,
+      "total_processed": 624,
+      "index": 624,
+      "runs": 769,
       "retries": 0,
-      "step": 768,
+      "step": 769,
       "status": "ready",
       "events": [
         {
@@ -65556,6 +65556,15 @@
           "run_id": "43175841169",
           "result": "操作完成（沿用原程式判定）",
           "ip": "172.184.214.213"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-12T07:34:32.046054+00:00",
+          "row": 625,
+          "run_id": "43176043361",
+          "result": "skipped_uncertain",
+          "ip": "",
+          "error": "IP 查詢失敗：Page.goto: net::ERR_SOCKET_NOT_CONNECTED at https://api.ipify.org/\nCall log:\n  - navigating to \"https://api.ipify.org/\", waiting until \"load\"\n"
         }
       ],
       "daily": {
@@ -65564,7 +65573,17 @@
         "stop_at": "2026-11-12T18:44:46+08:00",
         "started": true,
         "submitted": true
-      }
+      },
+      "skipped_rows": [
+        {
+          "round": 1,
+          "row": 625,
+          "reason": "IP 查詢失敗：Page.goto: net::ERR_SOCKET_NOT_CONNECTED at https://api.ipify.org/\nCall log:\n  - navigating to \"https://api.ipify.org/\", waiting until \"load\"\n",
+          "time": "2026-11-12T07:34:56.875896+00:00",
+          "run_id": "43176043361"
+        }
+      ],
+      "total_skipped": 1
     }
   },
   "daily_schedule": {
