@@ -59191,9 +59191,9 @@
       "round": 1,
       "total_processed": 406,
       "index": 406,
-      "runs": 503,
-      "retries": 1,
-      "step": 503,
+      "runs": 504,
+      "retries": 2,
+      "step": 504,
       "status": "ready",
       "events": [
         {
@@ -63219,6 +63219,14 @@
           "run_id": "43005612805",
           "result": "duplicate_ip",
           "ip": "20.221.60.230"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-12T01:18:18.377558+00:00",
+          "row": 408,
+          "run_id": "43133505194",
+          "result": "duplicate_ip",
+          "ip": "52.154.132.178"
         }
       ],
       "daily": {
@@ -63227,8 +63235,7 @@
         "stop_at": "2026-11-12T18:44:46+08:00",
         "started": true,
         "submitted": false
-      },
-      "pause_reason": "已到休息時間，保留列號與輪次。"
+      }
     }
   },
   "daily_schedule": {
