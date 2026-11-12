@@ -6931,6 +6931,7 @@
     "68.220.59.247",
     "68.220.59.49",
     "68.220.59.52",
+    "68.220.59.56",
     "68.220.59.57",
     "68.220.60.146",
     "68.220.60.149",
@@ -7143,8 +7144,7 @@
     "94.230.208.148",
     "95.128.43.164",
     "95.211.239.220",
-    "98.89.53.239",
-    "68.220.59.56"
+    "98.89.53.239"
   ],
   "batches": {
     "test-001": {
@@ -59457,11 +59457,11 @@
       "max_rounds": 3,
       "fingerprint": "828f28e486c455600bdc1f02e0c4f3651735c34ef0a5bbae26e06722168923af",
       "round": 1,
-      "total_processed": 675,
-      "index": 675,
-      "runs": 831,
+      "total_processed": 676,
+      "index": 676,
+      "runs": 832,
       "retries": 0,
-      "step": 831,
+      "step": 832,
       "status": "ready",
       "events": [
         {
@@ -66112,6 +66112,15 @@
           "run_id": "43187875230",
           "result": "操作完成（沿用原程式判定）",
           "ip": "68.220.59.56"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-12T09:04:04.784600+00:00",
+          "row": 677,
+          "run_id": "43188057044",
+          "result": "skipped_uncertain",
+          "ip": "",
+          "error": "IP 查詢失敗：IP 查詢服務回應失敗"
         }
       ],
       "daily": {
@@ -66128,9 +66137,16 @@
           "reason": "IP 查詢失敗：Page.goto: net::ERR_SOCKET_NOT_CONNECTED at https://api.ipify.org/\nCall log:\n  - navigating to \"https://api.ipify.org/\", waiting until \"load\"\n",
           "time": "2026-11-12T07:34:56.875896+00:00",
           "run_id": "43176043361"
+        },
+        {
+          "round": 1,
+          "row": 677,
+          "reason": "IP 查詢失敗：IP 查詢服務回應失敗",
+          "time": "2026-11-12T09:04:04.876375+00:00",
+          "run_id": "43188057044"
         }
       ],
-      "total_skipped": 1
+      "total_skipped": 2
     }
   },
   "daily_schedule": {
