@@ -59521,10 +59521,10 @@
       "round": 1,
       "total_processed": 737,
       "index": 737,
-      "runs": 901,
+      "runs": 900,
       "retries": 1,
       "step": 901,
-      "status": "in_flight",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -66733,7 +66733,7 @@
           "time": "2026-11-12T10:44:16.612261+00:00",
           "row": 739,
           "run_id": "43202888937",
-          "result": "in_flight",
+          "result": "paused_before_submit",
           "ip": "52.225.97.31"
         }
       ],
@@ -66760,7 +66760,8 @@
           "run_id": "43188057044"
         }
       ],
-      "total_skipped": 2
+      "total_skipped": 2,
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
