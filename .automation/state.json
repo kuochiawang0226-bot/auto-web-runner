@@ -7093,7 +7093,8 @@
     "94.230.208.148",
     "95.128.43.164",
     "95.211.239.220",
-    "98.89.53.239"
+    "98.89.53.239",
+    "20.15.206.133"
   ],
   "batches": {
     "test-001": {
@@ -59408,10 +59409,10 @@
       "round": 1,
       "total_processed": 624,
       "index": 624,
-      "runs": 769,
+      "runs": 770,
       "retries": 0,
-      "step": 769,
-      "status": "ready",
+      "step": 770,
+      "status": "in_flight",
       "events": [
         {
           "round": 1,
@@ -65565,6 +65566,14 @@
           "result": "skipped_uncertain",
           "ip": "",
           "error": "IP 查詢失敗：Page.goto: net::ERR_SOCKET_NOT_CONNECTED at https://api.ipify.org/\nCall log:\n  - navigating to \"https://api.ipify.org/\", waiting until \"load\"\n"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-12T07:36:17.372433+00:00",
+          "row": 626,
+          "run_id": "43176374829",
+          "result": "in_flight",
+          "ip": "20.15.206.133"
         }
       ],
       "daily": {
