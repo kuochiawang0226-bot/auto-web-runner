@@ -59811,10 +59811,10 @@
       "round": 1,
       "total_processed": 1026,
       "index": 1026,
-      "runs": 1267,
+      "runs": 1266,
       "retries": 1,
       "step": 1268,
-      "status": "in_flight",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -69959,7 +69959,7 @@
           "time": "2026-11-13T10:33:37.695918+00:00",
           "row": 1028,
           "run_id": "43409895982",
-          "result": "in_flight",
+          "result": "paused_before_submit",
           "ip": "20.98.135.36"
         }
       ],
@@ -69986,7 +69986,8 @@
           "run_id": "43188057044"
         }
       ],
-      "total_skipped": 2
+      "total_skipped": 2,
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
