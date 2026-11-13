@@ -7206,7 +7206,8 @@
     "94.230.208.148",
     "95.128.43.164",
     "95.211.239.220",
-    "98.89.53.239"
+    "98.89.53.239",
+    "48.217.147.0"
   ],
   "batches": {
     "test-001": {
@@ -59521,10 +59522,10 @@
       "round": 1,
       "total_processed": 737,
       "index": 737,
-      "runs": 900,
+      "runs": 901,
       "retries": 1,
-      "step": 901,
-      "status": "ready",
+      "step": 902,
+      "status": "in_flight",
       "events": [
         {
           "round": 1,
@@ -66735,6 +66736,14 @@
           "run_id": "43202888937",
           "result": "paused_before_submit",
           "ip": "52.225.97.31"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-13T01:14:22.299642+00:00",
+          "row": 739,
+          "run_id": "43343306109",
+          "result": "in_flight",
+          "ip": "48.217.147.0"
         }
       ],
       "daily": {
@@ -66760,8 +66769,7 @@
           "run_id": "43188057044"
         }
       ],
-      "total_skipped": 2,
-      "pause_reason": "已到休息時間，保留列號與輪次。"
+      "total_skipped": 2
     }
   },
   "daily_schedule": {
