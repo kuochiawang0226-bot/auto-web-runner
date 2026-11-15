@@ -60242,13 +60242,13 @@
       "max_runs": 2000,
       "max_rounds": 3,
       "fingerprint": "828f28e486c455600bdc1f02e0c4f3651735c34ef0a5bbae26e06722168923af",
-      "round": 1,
+      "round": 2,
       "total_processed": 1461,
-      "index": 1461,
-      "runs": 2000,
-      "retries": 1,
+      "index": 0,
+      "runs": 0,
+      "retries": 0,
       "step": 2002,
-      "status": "limit_reached",
+      "status": "ready",
       "events": [
         {
           "round": 1,
