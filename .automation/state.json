@@ -60208,11 +60208,11 @@
       "max_rounds": 3,
       "fingerprint": "828f28e486c455600bdc1f02e0c4f3651735c34ef0a5bbae26e06722168923af",
       "round": 1,
-      "total_processed": 1425,
-      "index": 1425,
-      "runs": 1939,
-      "retries": 2,
-      "step": 1941,
+      "total_processed": 1426,
+      "index": 1426,
+      "runs": 1940,
+      "retries": 0,
+      "step": 1942,
       "status": "ready",
       "events": [
         {
@@ -75744,6 +75744,15 @@
           "run_id": "43687578890",
           "result": "duplicate_ip",
           "ip": "3.42.157.163"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-15T06:57:08.097612+00:00",
+          "row": 1427,
+          "run_id": "43687671092",
+          "result": "skipped_uncertain",
+          "ip": "",
+          "error": "IP 查詢失敗：IP 查詢服務回應失敗"
         }
       ],
       "daily": {
@@ -75767,9 +75776,16 @@
           "reason": "IP 查詢失敗：IP 查詢服務回應失敗",
           "time": "2026-11-12T09:04:04.876375+00:00",
           "run_id": "43188057044"
+        },
+        {
+          "round": 1,
+          "row": 1427,
+          "reason": "IP 查詢失敗：IP 查詢服務回應失敗",
+          "time": "2026-11-15T06:57:08.197965+00:00",
+          "run_id": "43687671092"
         }
       ],
-      "total_skipped": 2
+      "total_skipped": 3
     }
   },
   "daily_schedule": {
