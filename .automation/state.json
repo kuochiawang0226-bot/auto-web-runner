@@ -60309,7 +60309,7 @@
       "runs": 101,
       "retries": 1,
       "step": 2103,
-      "status": "ready",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -77169,7 +77169,8 @@
           "run_id": "43687671092"
         }
       ],
-      "total_skipped": 3
+      "total_skipped": 3,
+      "pause_reason": "今天尚未送出且已超過 09:30，等待明日。"
     }
   },
   "daily_schedule": {
