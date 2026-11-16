@@ -60309,7 +60309,7 @@
       "runs": 100,
       "retries": 0,
       "step": 2102,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -77135,7 +77135,7 @@
         "date": "2026-11-16",
         "start_at": "2026-11-16T08:57:29+08:00",
         "stop_at": "2026-11-16T18:39:53+08:00",
-        "started": false,
+        "started": true,
         "submitted": false
       },
       "skipped_rows": [
