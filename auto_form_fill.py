@@ -212,7 +212,7 @@ def check_daily_window(batch, clock):
                 if plan.get('manual_start') else datetime.fromisoformat(plan['start_at']))
     if not earliest <= clock < datetime.fromisoformat(plan['stop_at']):
         raise SchedulePause('已到休息時間，保留列號與輪次。')
-    if not plan.get('submitted') and not plan.get('manual_start') and clock >= clock.replace(hour=9, minute=30, second=0, microsecond=0):
+    if not plan.get('submitted') and not plan.get('manual_start') and clock >= clock.replace(hour=9, minute=45, second=0, microsecond=0):
         raise SchedulePause('今天尚未送出且已超過 09:30，等待明日。')
 
 
@@ -557,7 +557,7 @@ def inputs_for(batch_id, batch):
 
 def start_day(batch, clock):
     plan = day_plan(batch, clock)
-    if clock >= clock.replace(hour=9, minute=30, second=0, microsecond=0):
+    if clock >= clock.replace(hour=9, minute=45, second=0, microsecond=0):
         return False
     if clock < datetime.fromisoformat(plan['start_at']):
         return False
@@ -710,7 +710,7 @@ def main():
             print('今日已啟動，不建立第二條接續工作。')
             return
         if not plan['started']:
-            # 排程 08:15 先準備；短間隔檢查停止旗標，最多等到 09:30。
+            # 排程 08:15 先準備；短間隔檢查停止旗標，最多等到 09:45。
             if scheduled:
                 while local_now() < datetime.fromisoformat(plan['start_at']):
                     try:
