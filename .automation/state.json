@@ -60309,7 +60309,7 @@
       "runs": 101,
       "retries": 1,
       "step": 2103,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -77144,7 +77144,9 @@
         "start_at": "2026-11-16T08:57:29+08:00",
         "stop_at": "2026-11-16T18:39:53+08:00",
         "started": true,
-        "submitted": false
+        "submitted": false,
+        "manual_start": true,
+        "manual_start_at": "2026-11-16T13:11:30.828838+08:00"
       },
       "skipped_rows": [
         {
@@ -77169,8 +77171,7 @@
           "run_id": "43687671092"
         }
       ],
-      "total_skipped": 3,
-      "pause_reason": "今天尚未送出且已超過 09:30，等待明日。"
+      "total_skipped": 3
     }
   },
   "daily_schedule": {
