@@ -60556,10 +60556,10 @@
       "round": 2,
       "total_processed": 1771,
       "index": 310,
-      "runs": 602,
+      "runs": 601,
       "retries": 0,
       "step": 2604,
-      "status": "in_flight",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -81393,7 +81393,7 @@
           "time": "2026-11-17T10:59:05.830195+00:00",
           "row": 312,
           "run_id": "44069705045",
-          "result": "in_flight",
+          "result": "paused_before_submit",
           "ip": "4.154.158.210"
         }
       ],
@@ -81427,7 +81427,8 @@
           "run_id": "43687671092"
         }
       ],
-      "total_skipped": 3
+      "total_skipped": 3,
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
