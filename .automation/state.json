@@ -60397,9 +60397,9 @@
       "round": 2,
       "total_processed": 1613,
       "index": 152,
-      "runs": 277,
-      "retries": 2,
-      "step": 2279,
+      "runs": 278,
+      "retries": 3,
+      "step": 2280,
       "status": "ready",
       "events": [
         {
@@ -78636,6 +78636,14 @@
           "run_id": "44007696696",
           "result": "duplicate_ip",
           "ip": "100.62.132.232"
+        },
+        {
+          "round": 2,
+          "time": "2026-11-17T03:07:47.723366+00:00",
+          "row": 154,
+          "run_id": "44007845630",
+          "result": "duplicate_ip",
+          "ip": "3.42.157.43"
         }
       ],
       "daily": {
