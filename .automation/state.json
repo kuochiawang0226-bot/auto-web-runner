@@ -81480,9 +81480,9 @@
       "round": 1,
       "total_processed": 40,
       "index": 40,
-      "runs": 80,
-      "retries": 3,
-      "step": 80,
+      "runs": 81,
+      "retries": 4,
+      "step": 81,
       "status": "ready",
       "events": [
         {
@@ -82122,6 +82122,14 @@
           "time": "2026-11-18T03:49:08.299033+00:00",
           "row": 42,
           "run_id": "44232939848",
+          "result": "duplicate_ip",
+          "ip": "3.42.157.54"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-18T03:50:32.432146+00:00",
+          "row": 42,
+          "run_id": "44233082408",
           "result": "duplicate_ip",
           "ip": "3.42.157.54"
         }
