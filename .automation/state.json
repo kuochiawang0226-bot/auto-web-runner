@@ -81596,10 +81596,10 @@
       "round": 1,
       "total_processed": 155,
       "index": 155,
-      "runs": 354,
+      "runs": 353,
       "retries": 0,
       "step": 354,
-      "status": "in_flight",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -84430,7 +84430,7 @@
           "time": "2026-11-18T10:41:50.969471+00:00",
           "row": 157,
           "run_id": "44287695023",
-          "result": "in_flight",
+          "result": "paused_before_submit",
           "ip": "172.214.102.9"
         }
       ],
@@ -84442,7 +84442,8 @@
         "submitted": true,
         "manual_start": true,
         "manual_start_at": "2026-11-18T09:51:51.371476+08:00"
-      }
+      },
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
