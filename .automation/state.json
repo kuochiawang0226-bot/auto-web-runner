@@ -81596,9 +81596,9 @@
       "round": 1,
       "total_processed": 155,
       "index": 155,
-      "runs": 354,
-      "retries": 1,
-      "step": 355,
+      "runs": 355,
+      "retries": 2,
+      "step": 356,
       "status": "ready",
       "events": [
         {
@@ -84440,6 +84440,14 @@
           "run_id": "44435862506",
           "result": "duplicate_ip",
           "ip": "3.41.210.74"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-19T01:20:54.034997+00:00",
+          "row": 157,
+          "run_id": "44436044408",
+          "result": "duplicate_ip",
+          "ip": "3.42.157.171"
         }
       ],
       "daily": {
