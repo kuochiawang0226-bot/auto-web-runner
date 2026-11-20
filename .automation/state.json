@@ -81723,9 +81723,9 @@
       "round": 1,
       "total_processed": 282,
       "index": 282,
-      "runs": 671,
-      "retries": 2,
-      "step": 672,
+      "runs": 672,
+      "retries": 3,
+      "step": 673,
       "status": "ready",
       "events": [
         {
@@ -87104,6 +87104,14 @@
           "run_id": "44507202583",
           "result": "duplicate_ip",
           "ip": "3.41.210.71"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-20T01:13:21.958428+00:00",
+          "row": 284,
+          "run_id": "44651803443",
+          "result": "duplicate_ip",
+          "ip": "3.42.157.91"
         }
       ],
       "daily": {
@@ -87122,8 +87130,7 @@
           "run_id": "44442083898"
         }
       ],
-      "total_skipped": 1,
-      "pause_reason": "已到休息時間，保留列號與輪次。"
+      "total_skipped": 1
     }
   },
   "daily_schedule": {
