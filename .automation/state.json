@@ -81988,7 +81988,7 @@
       "runs": 1481,
       "retries": 2,
       "step": 1482,
-      "status": "ready",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -93864,7 +93864,8 @@
           "run_id": "44442083898"
         }
       ],
-      "total_skipped": 1
+      "total_skipped": 1,
+      "pause_reason": "已到休息時間，保留列號與輪次。"
     }
   },
   "daily_schedule": {
