@@ -33,31 +33,65 @@ CUSTOM_DROPDOWN_CSS = (
 
 
 def _select_native(sel, label, wait=15):
-    """一般下拉選單：等選項出現（第二個選單常要等第一個選完才載入），再選取。"""
-    deadline = time.time() + wait
-    while time.time() < deadline:
-        texts = [t.strip() for t in sel.locator("option").all_inner_texts()]
-        if label in texts:
-            sel.select_option(index=texts.index(label), force=True)
+    """一般下拉選單：只接受完整名稱一致的選項。"""
+    label = str(label).strip()
+    deadline = time.monotonic() + wait
+
+    while time.monotonic() < deadline:
+        texts = [
+            t.strip()
+            for t in sel.locator("option").all_inner_texts()
+        ]
+        matches = [
+            index for index, text in enumerate(texts)
+            if text == label
+        ]
+
+        if len(matches) > 1:
+            raise RuntimeError(f"選單中有多個同名選項「{label}」")
+
+        if len(matches) == 1:
+            sel.select_option(index=matches[0], force=True)
             return True
-        partial = [k for k, t in enumerate(texts) if label in t]
-        if partial:
-            sel.select_option(index=partial[0], force=True)
-            return True
+
         time.sleep(0.5)
+
     return False
 
 
 def _select_custom(page, nth, label):
-    """網站自製選單：點開第 nth 個選單，再點選項文字。"""
+    """自製選單：只點擊完整名稱一致且可見的唯一選項。"""
+    label = str(label).strip()
     page.locator(CUSTOM_DROPDOWN_CSS).nth(nth).click()
-    time.sleep(0.8)
-    opt = page.get_by_role("option", name=label)
-    if opt.count() == 0:
-        opt = page.get_by_text(label, exact=True)
-    opt.last.click()
+    deadline = time.monotonic() + 15
 
+    while time.monotonic() < deadline:
+        options = page.get_by_role("option", name=label, exact=True)
+        visible = [
+            options.nth(i)
+            for i in range(options.count())
+            if options.nth(i).is_visible()
+        ]
 
+        if not visible:
+            texts = page.get_by_text(label, exact=True)
+            visible = [
+                texts.nth(i)
+                for i in range(texts.count())
+                if texts.nth(i).is_visible()
+            ]
+
+        if len(visible) > 1:
+            raise RuntimeError(f"找到多個可見的同名項目「{label}」，不自動選取")
+
+        if len(visible) == 1:
+            visible[0].click()
+            return
+
+        time.sleep(0.5)
+
+    raise RuntimeError(f"找不到完整名稱一致的選項「{label}」")
+    
 def choose(page, nth, label, selector=""):
     """選第 nth 個下拉選單（0＝第一個、1＝第二個）的指定項目。"""
     if selector:
