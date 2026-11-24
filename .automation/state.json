@@ -82126,10 +82126,10 @@
       "round": 1,
       "total_processed": 790,
       "index": 790,
-      "runs": 1935,
+      "runs": 1936,
       "retries": 0,
-      "step": 1936,
-      "status": "ready",
+      "step": 1937,
+      "status": "in_flight",
       "events": [
         {
           "round": 1,
@@ -97782,6 +97782,15 @@
           "run_id": "45419873802",
           "result": "操作完成（沿用原程式判定）",
           "ip": "52.7.11.124",
+          "ip_seen_before": true
+        },
+        {
+          "round": 1,
+          "time": "2026-11-24T15:00:11.452872+00:00",
+          "row": 792,
+          "run_id": "45420212410",
+          "result": "in_flight",
+          "ip": "3.42.157.196",
           "ip_seen_before": true
         }
       ],
