@@ -82107,10 +82107,10 @@
       "round": 1,
       "total_processed": 752,
       "index": 752,
-      "runs": 1897,
+      "runs": 1898,
       "retries": 0,
-      "step": 1898,
-      "status": "ready",
+      "step": 1899,
+      "status": "in_flight",
       "events": [
         {
           "round": 1,
@@ -97421,6 +97421,15 @@
           "run_id": "45408227522",
           "result": "操作完成（沿用原程式判定）",
           "ip": "3.42.157.171",
+          "ip_seen_before": true
+        },
+        {
+          "round": 1,
+          "time": "2026-11-24T13:56:59.319494+00:00",
+          "row": 754,
+          "run_id": "45408537822",
+          "result": "in_flight",
+          "ip": "3.42.157.28",
           "ip_seen_before": true
         }
       ],
