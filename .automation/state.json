@@ -82067,10 +82067,10 @@
       "round": 1,
       "total_processed": 626,
       "index": 626,
-      "runs": 1771,
-      "retries": 7,
-      "step": 1772,
-      "status": "ready",
+      "runs": 1772,
+      "retries": 0,
+      "step": 1773,
+      "status": "in_flight",
       "events": [
         {
           "round": 1,
@@ -96248,6 +96248,15 @@
           "run_id": "45370746872",
           "result": "duplicate_ip",
           "ip": "3.41.210.121"
+        },
+        {
+          "round": 1,
+          "time": "2026-11-24T10:13:49.101924+00:00",
+          "row": 628,
+          "run_id": "45372616578",
+          "result": "in_flight",
+          "ip": "3.41.210.70",
+          "ip_seen_before": true
         }
       ],
       "daily": {
