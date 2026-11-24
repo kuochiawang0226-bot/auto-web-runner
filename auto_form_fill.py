@@ -199,21 +199,29 @@ def day_plan(batch, clock):
         batch['daily'] = {
             'date': day,
             'start_at': (base + timedelta(hours=8, minutes=30, seconds=secrets.randbelow(1800))).isoformat(),
-            'stop_at': (base + timedelta(hours=18, minutes=30, seconds=secrets.randbelow(1801))).isoformat(),
+            'stop_at': (base + timedelta(hours=23, minutes=30)).isoformat(),
             'started': False, 'submitted': False}
     return batch['daily']
 
 
 def check_daily_window(batch, clock):
     plan = batch.get('daily', {})
+
     if plan.get('date') != clock.date().isoformat() or not plan.get('started'):
         raise SchedulePause('等待今日排程啟動。')
-    earliest = (clock.replace(hour=8, minute=30, second=0, microsecond=0)
-                if plan.get('manual_start') else datetime.fromisoformat(plan['start_at']))
-    if not earliest <= clock < datetime.fromisoformat(plan['stop_at']):
-        raise SchedulePause('已到休息時間，保留列號與輪次。')
-    if not plan.get('submitted') and not plan.get('manual_start') and clock >= clock.replace(hour=9, minute=45, second=0, microsecond=0):
-        raise SchedulePause('今天尚未送出且已超過 09:30，等待明日。')
+
+    earliest = (
+        clock.replace(hour=8, minute=30, second=0, microsecond=0)
+        if plan.get('manual_start')
+        else datetime.fromisoformat(plan['start_at'])
+    )
+    stop_at = datetime.fromisoformat(plan['stop_at'])
+
+    if clock < earliest:
+        raise SchedulePause('尚未到今日開始時間。')
+
+    if clock >= stop_at:
+        raise SchedulePause('已到今日停止時間，保留進度等待明日。')
 
 
 
@@ -557,15 +565,16 @@ def inputs_for(batch_id, batch):
 
 def start_day(batch, clock):
     plan = day_plan(batch, clock)
-    if clock >= clock.replace(hour=9, minute=45, second=0, microsecond=0):
+    start_at = datetime.fromisoformat(plan['start_at'])
+    stop_at = datetime.fromisoformat(plan['stop_at'])
+
+    if not start_at <= clock < stop_at:
         return False
-    if clock < datetime.fromisoformat(plan['start_at']):
-        return False
+
     plan['started'] = True
     if batch['status'] == 'waiting_window':
         batch['status'] = 'ready'
     return True
-
 
 def main():
     if os.environ.get('GITHUB_ACTIONS') != 'true':
