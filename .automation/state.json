@@ -82130,10 +82130,10 @@
       "round": 1,
       "total_processed": 807,
       "index": 807,
-      "runs": 1953,
+      "runs": 1952,
       "retries": 0,
       "step": 1954,
-      "status": "in_flight",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -97946,7 +97946,7 @@
           "time": "2026-11-24T15:29:49.318136+00:00",
           "row": 809,
           "run_id": "45425955985",
-          "result": "in_flight",
+          "result": "paused_before_submit",
           "ip": "3.42.157.169",
           "ip_seen_before": true
         }
@@ -97969,7 +97969,8 @@
           "run_id": "44442083898"
         }
       ],
-      "total_skipped": 1
+      "total_skipped": 1,
+      "pause_reason": "已到今日停止時間，保留進度等待明日。"
     }
   },
   "daily_schedule": {
