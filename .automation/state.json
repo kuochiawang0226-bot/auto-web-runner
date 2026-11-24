@@ -81988,7 +81988,7 @@
       "runs": 1481,
       "retries": 2,
       "step": 1482,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -93852,8 +93852,10 @@
         "date": "2026-11-24",
         "start_at": "2026-11-24T08:48:42+08:00",
         "stop_at": "2026-11-24T23:30:00+08:00",
-        "started": false,
-        "submitted": false
+        "started": true,
+        "submitted": false,
+        "manual_start": true,
+        "manual_start_at": "2026-11-24T11:24:12.356886+08:00"
       },
       "skipped_rows": [
         {
@@ -93864,8 +93866,7 @@
           "run_id": "44442083898"
         }
       ],
-      "total_skipped": 1,
-      "pause_reason": "尚未到今日開始時間，或已錯過 09:30 的首次啟動截止時間。"
+      "total_skipped": 1
     }
   },
   "daily_schedule": {
