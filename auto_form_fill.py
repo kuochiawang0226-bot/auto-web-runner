@@ -604,15 +604,73 @@ def start_day(batch, clock):
         batch['status'] = 'ready'
     return True
 
+def worker_active(store):
+    """查全部未完成工作；檢查工作本身及查詢模式不算網站工作。"""
+    for status in ('queued', 'in_progress', 'waiting', 'pending', 'requested'):
+        page = 1
+        while True:
+            query = urllib.parse.urlencode({'status': status, 'per_page': 100, 'page': page})
+            result = store.request('GET', '/actions/workflows/' + WORKFLOW_FILE + '/runs?' + query)
+            runs = result['workflow_runs']
+            for run in runs:
+                if str(run['id']) == os.environ.get('GITHUB_RUN_ID'):
+                    continue
+                title = run.get('display_title', '')
+                if title.startswith(('watchdog |', 'inspect |')):
+                    continue
+                # 不認識的舊工作也視為忙碌，避免和舊版同時操作。
+                print('已有執行或排隊工作：', run['id'], run['status'])
+                return True
+            if len(runs) < 100:
+                break
+            page += 1
+    return False
+
+
+def watchdog(store, state):
+    """只喚醒既有批次，不操作網站、不修改進度。"""
+    active = state.get('daily_schedule', {})
+    if not active.get('enabled'):
+        print('備援檢查：沒有啟用中的每日排程。')
+        return
+    batch_id = active['batch_id']
+    batch = state['batches'][batch_id]
+    if batch['status'] not in ('ready', 'waiting_window', 'complete', 'limit_reached',
+                                'in_flight', 'operation_uncertain', 'ip_lookup_failed', 'retry_limit'):
+        print('備援檢查：不自動啟動此狀態：', batch['status'])
+        return
+    store.check_stop()
+    clock = local_now()
+    stop = clock.replace(hour=23, minute=30, second=0, microsecond=0)
+    daily = batch.get('daily', {})
+    if daily.get('date') == clock.date().isoformat():
+        stop = datetime.fromisoformat(daily['stop_at'])
+    if not clock.replace(hour=8, minute=15, second=0, microsecond=0) <= clock < stop:
+        print('備援檢查：不在今日啟動時段，保留進度。')
+        return
+    if worker_active(store):
+        print('備援檢查：接續工作仍在，不重複啟動。')
+        return
+    dispatch_batch = dict(batch, daily={'date': clock.date().isoformat()})
+    inputs = inputs_for(batch_id, dispatch_batch)
+    inputs.update(mode='resume', expected_date=clock.date().isoformat())
+    store.dispatch(inputs)
+    print('備援檢查：已要求沿用批次', batch_id, '的原進度續跑。')
+
+
 def main():
     if os.environ.get('GITHUB_ACTIONS') != 'true':
         raise RuntimeError('請透過 GitHub Actions 執行。')
     scheduled = os.environ.get('GITHUB_EVENT_NAME') == 'schedule'
     mode = 'schedule' if scheduled else os.environ.get('MODE', 'check_ip')
-    if mode not in ('check_ip', 'execute', 'execute_now', 'status', 'schedule'):
+    if mode not in ('check_ip', 'execute', 'execute_now', 'status', 'schedule', 'resume'):
         raise ValueError('未知模式')
     store = GitHubStore()
+    print('執行模式：', mode, '工作：', os.environ.get('GITHUB_RUN_ID', ''))
     state = store.load()
+    if scheduled:
+        watchdog(store, state)
+        return
     state['used_ips'] = sorted(set(state['used_ips']) | legacy_ips('送出紀錄.csv'))
     if mode == 'status':
         batch_id = os.environ.get('BATCH_ID', '').strip() or state.get('daily_schedule', {}).get('batch_id')
@@ -648,6 +706,9 @@ def main():
         raise ValueError('請先設定 TARGET_URL Secret（HTTPS 網址）。')
     expected = os.environ.get('EXPECTED_STEP', '').strip() if not scheduled else ''
     continuation = bool(expected)
+    resuming = mode == 'resume'
+    if resuming and not continuation:
+        raise ValueError('resume 僅供自動備援使用，必須附帶原進度與日期。')
     if mode == 'execute_now' and (continuation or os.environ.get('EXPECTED_DATE', '').strip()):
         raise ValueError('立即續跑請將 expected_step 與 expected_date 留空。')
     registration = not scheduled and not continuation
@@ -712,6 +773,15 @@ def main():
         write_result(batch)
         print('手動停止開關生效。')
         return
+    if resuming:
+        clock = local_now()
+        daily = batch.get('daily', {})
+        stop = clock.replace(hour=23, minute=30, second=0, microsecond=0)
+        if daily.get('date') == clock.date().isoformat():
+            stop = datetime.fromisoformat(daily['stop_at'])
+        if not clock.replace(hour=8, minute=15, second=0, microsecond=0) <= clock < stop:
+            print('備援工作抵達時已不在啟動時段，保留進度。')
+            return
     if batch['status'] in ('in_flight', 'operation_uncertain', 'ip_lookup_failed', 'retry_limit'):
         previous_status = batch['status']
         skip_current(batch, rows, '恢復中斷批次，原狀態：' + previous_status)
@@ -729,7 +799,7 @@ def main():
         print('不自動恢復需要人工核對或手動暫停的批次。')
         return
     clock = local_now()
-    if not continuation:
+    if not continuation or resuming:
         plan = day_plan(batch, clock)
         store.save(state)
         if mode == 'execute_now':
@@ -743,12 +813,9 @@ def main():
                 return
             store.save(state)
             print('立即續跑：沿用原進度，今日略過早上開始限制。')
-        if scheduled and plan['started']:
-            print('今日已啟動，不建立第二條接續工作。')
-            return
         if not plan['started']:
-            # 排程 08:15 先準備；短間隔檢查停止旗標，最多等到 09:45。
-            if scheduled:
+            # 備援 08:15 先準備，等待今日隨機開始時間，並持續檢查 STOP。
+            if resuming:
                 while local_now() < datetime.fromisoformat(plan['start_at']):
                     try:
                         store.check_stop()
@@ -760,7 +827,7 @@ def main():
                     time.sleep(min(20, max(0.1, (datetime.fromisoformat(plan['start_at']) - local_now()).total_seconds())))
             if not start_day(batch, local_now()):
                 batch['status'] = 'waiting_window'
-                batch['pause_reason'] = '尚未到今日開始時間，或已錯過 09:30 的首次啟動截止時間。'
+                batch['pause_reason'] = '尚未到今日開始時間，或已到今日停止時間。'
                 store.save(state)
                 write_result(batch)
                 print('已登記每日排程，等待下一個允許的早晨時段。')
