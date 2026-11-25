@@ -82140,12 +82140,12 @@
       "max_rounds": 5,
       "fingerprint": "98591e52b9f805bb0ba507da0d0a849f0f1abcb0d7a00aa419624897c448e237",
       "round": 1,
-      "total_processed": 845,
-      "index": 845,
+      "total_processed": 846,
+      "index": 846,
       "runs": 1991,
       "retries": 0,
       "step": 1993,
-      "status": "in_flight",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -98309,7 +98309,7 @@
           "time": "2026-11-25T03:04:17.895723+00:00",
           "row": 847,
           "run_id": "45537243813",
-          "result": "in_flight",
+          "result": "操作完成（沿用原程式判定）",
           "ip": "3.42.157.176",
           "ip_seen_before": true
         }
