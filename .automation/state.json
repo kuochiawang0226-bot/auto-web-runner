@@ -82190,11 +82190,11 @@
       "max_rounds": 5,
       "fingerprint": "98591e52b9f805bb0ba507da0d0a849f0f1abcb0d7a00aa419624897c448e237",
       "round": 2,
-      "total_processed": 915,
-      "index": 60,
-      "runs": 152,
-      "retries": 10,
-      "step": 2154,
+      "total_processed": 916,
+      "index": 61,
+      "runs": 153,
+      "retries": 0,
+      "step": 2155,
       "status": "ready",
       "events": [
         {
@@ -99811,6 +99811,16 @@
           "result": "duplicate_ip",
           "ip": "3.42.157.196",
           "ip_seen_before": true
+        },
+        {
+          "round": 2,
+          "time": "2026-11-25T07:03:45.766083+00:00",
+          "row": 62,
+          "run_id": "45565092880",
+          "result": "skipped_duplicate_ip",
+          "ip": "3.41.210.69",
+          "ip_seen_before": true,
+          "error": "初次及額外 10 次均為重複 IP，未操作網站。"
         }
       ],
       "daily": {
@@ -99829,9 +99839,16 @@
           "reason": "網站操作失敗或結果不確定：Page.wait_for_load_state: Timeout 60000ms exceeded.",
           "time": "2026-11-19T02:10:07.022829+00:00",
           "run_id": "44442083898"
+        },
+        {
+          "round": 2,
+          "row": 62,
+          "reason": "初次及額外 10 次均為重複 IP，未操作網站。",
+          "time": "2026-11-25T07:03:45.844656+00:00",
+          "run_id": "45565092880"
         }
       ],
-      "total_skipped": 1
+      "total_skipped": 2
     }
   },
   "daily_schedule": {
