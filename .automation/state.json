@@ -82154,9 +82154,9 @@
       "round": 2,
       "total_processed": 877,
       "index": 22,
-      "runs": 22,
-      "retries": 0,
-      "step": 2024,
+      "runs": 23,
+      "retries": 1,
+      "step": 2025,
       "status": "ready",
       "events": [
         {
@@ -98602,6 +98602,15 @@
           "run_id": "45543248031",
           "result": "操作完成（沿用原程式判定）",
           "ip": "3.42.157.144",
+          "ip_seen_before": true
+        },
+        {
+          "round": 2,
+          "time": "2026-11-25T04:06:49.662561+00:00",
+          "row": 24,
+          "run_id": "45544447090",
+          "result": "duplicate_ip",
+          "ip": "172.214.102.226",
           "ip_seen_before": true
         }
       ],
