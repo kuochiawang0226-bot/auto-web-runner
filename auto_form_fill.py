@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """GitHub Actions 單列執行版。請配合 .github/workflows/run-row.yml 與 README 使用。
-每次工作只查一次 IP；重複時由下一個獨立工作重試，不使用 Tor。
+每次工作只查一次 IP；歷史重複最多額外重試 10 次，仍重複則跳過，不送出。
 原有網頁定位及操作邏輯保留。操作完成不等同網站已確認受理。
 """
 import os
@@ -20,6 +20,7 @@ SHEET_NAME = os.environ.get("SHEET_NAME") or None
 DROPDOWN1_OPTION = "中部汽車"
 SUBMIT_TEXT = "送出"
 WAIT_AFTER_SUBMIT = 5
+DUPLICATE_IP_RETRIES = 10  # 額外重試上限；獨立於舊批次 max_retries，保留原設定相容性。
 DROPDOWN1_SELECTOR = ""
 DROPDOWN2_SELECTOR = ""
 FIELD_SELECTOR = ""
@@ -499,7 +500,7 @@ def skip_current(batch, rows, reason, event=None):
 
 
 def process_attempt(state, batch, rows, get_ip, operate, save):
-    """每次處理一列，IP 僅記錄；回傳 True 才接續新工作。"""
+    """每次查一次 IP，歷史重複不操作網站；回傳 True 才接續新工作。"""
     if batch['status'] != 'ready':
         return False
     if batch['index'] >= len(rows):
@@ -525,12 +526,25 @@ def process_attempt(state, batch, rows, get_ip, operate, save):
         save(state)
         return more
     event['ip'] = ip
-    # IP 僅供紀錄；歷史重複不阻擋、不重試、不跳過資料。
     event['ip_seen_before'] = ip in state['used_ips']
     if event['ip_seen_before']:
-        print('此 IP 曾使用過，僅記錄，繼續處理本列。', flush=True)
-    else:
-        state['used_ips'].append(ip)
+        event['result'] = 'duplicate_ip'
+        previous_retries = batch.get('retries', 0)
+        if previous_retries >= DUPLICATE_IP_RETRIES:
+            more = skip_current(batch, rows,
+                f'初次及額外 {DUPLICATE_IP_RETRIES} 次均為重複 IP，未操作網站。', event)
+            event['result'] = 'skipped_duplicate_ip'
+            save(state)
+            return more
+        batch['retries'] = previous_retries + 1
+        print(f'第 {row[0]} 列 IP 重複，未操作網站；準備額外重試 '
+              f"{batch['retries']}/{DUPLICATE_IP_RETRIES}。", flush=True)
+        if batch['runs'] >= batch['max_runs']:
+            batch['status'] = 'limit_reached'
+            print('已達本輪工作上限，依原規則處理輪次，不再追加重試。', flush=True)
+        save(state)
+        return batch['status'] == 'ready'
+    state['used_ips'].append(ip)
     batch['retries'] = 0
     # 操作前仍先儲存 in_flight，保留中斷恢復機制。
     batch['status'] = 'in_flight'
