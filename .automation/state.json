@@ -82291,7 +82291,7 @@
       "runs": 414,
       "retries": 0,
       "step": 2416,
-      "status": "ready",
+      "status": "waiting_window",
       "events": [
         {
           "round": 1,
@@ -102309,7 +102309,8 @@
           "run_id": "45644872066"
         }
       ],
-      "total_skipped": 4
+      "total_skipped": 4,
+      "pause_reason": "已到今日停止時間，保留進度等待明日。"
     }
   },
   "daily_schedule": {
