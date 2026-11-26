@@ -9115,7 +9115,8 @@
     "94.230.208.148",
     "95.128.43.164",
     "95.211.239.220",
-    "98.89.53.239"
+    "98.89.53.239",
+    "128.203.199.147"
   ],
   "batches": {
     "test-001": {
@@ -82314,10 +82315,10 @@
       "round": 2,
       "total_processed": 1041,
       "index": 186,
-      "runs": 511,
-      "retries": 1,
-      "step": 2514,
-      "status": "ready",
+      "runs": 512,
+      "retries": 0,
+      "step": 2515,
+      "status": "in_flight",
       "events": [
         {
           "round": 1,
@@ -103178,6 +103179,15 @@
           "result": "duplicate_ip",
           "ip": "3.41.210.135",
           "ip_seen_before": true
+        },
+        {
+          "round": 2,
+          "time": "2026-11-26T05:20:35.735471+00:00",
+          "row": 188,
+          "run_id": "45760874240",
+          "result": "in_flight",
+          "ip": "128.203.199.147",
+          "ip_seen_before": false
         }
       ],
       "daily": {
