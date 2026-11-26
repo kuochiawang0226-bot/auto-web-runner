@@ -82306,11 +82306,11 @@
       "max_rounds": 5,
       "fingerprint": "98591e52b9f805bb0ba507da0d0a849f0f1abcb0d7a00aa419624897c448e237",
       "round": 2,
-      "total_processed": 1033,
-      "index": 178,
-      "runs": 481,
-      "retries": 10,
-      "step": 2484,
+      "total_processed": 1034,
+      "index": 179,
+      "runs": 482,
+      "retries": 0,
+      "step": 2485,
       "status": "ready",
       "events": [
         {
@@ -102900,6 +102900,16 @@
           "result": "duplicate_ip",
           "ip": "3.42.157.31",
           "ip_seen_before": true
+        },
+        {
+          "round": 2,
+          "time": "2026-11-26T04:38:32.644705+00:00",
+          "row": 180,
+          "run_id": "45756391333",
+          "result": "skipped_duplicate_ip",
+          "ip": "3.42.157.171",
+          "ip_seen_before": true,
+          "error": "初次及額外 10 次均為重複 IP，未操作網站。"
         }
       ],
       "daily": {
@@ -102939,9 +102949,16 @@
           "reason": "初次及額外 10 次均為重複 IP，未操作網站。",
           "time": "2026-11-25T15:25:56.004333+00:00",
           "run_id": "45644872066"
+        },
+        {
+          "round": 2,
+          "row": 180,
+          "reason": "初次及額外 10 次均為重複 IP，未操作網站。",
+          "time": "2026-11-26T04:38:32.847978+00:00",
+          "run_id": "45756391333"
         }
       ],
-      "total_skipped": 4
+      "total_skipped": 5
     }
   },
   "daily_schedule": {
