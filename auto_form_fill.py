@@ -707,12 +707,12 @@ def main():
         raise RuntimeError('請透過 GitHub Actions 執行。')
     scheduled = os.environ.get('GITHUB_EVENT_NAME') == 'schedule'
     mode = 'schedule' if scheduled else os.environ.get('MODE', 'check_ip')
-    if mode not in ('check_ip', 'execute', 'execute_now', 'status', 'schedule', 'resume'):
+    if mode not in ('check_ip', 'execute', 'execute_now', 'status', 'schedule', 'resume', 'watchdog'):
         raise ValueError('未知模式')
     store = GitHubStore()
     print('執行模式：', mode, '工作：', os.environ.get('GITHUB_RUN_ID', ''))
     state = store.load()
-    if scheduled:
+    if scheduled or mode == 'watchdog':
         watchdog(store, state)
         return
     state['used_ips'] = sorted(set(state['used_ips']) | legacy_ips('送出紀錄.csv'))
