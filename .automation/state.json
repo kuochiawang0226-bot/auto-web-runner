@@ -102271,13 +102271,11 @@
         }
       ],
       "daily": {
-        "date": "2026-11-25",
-        "start_at": "2026-11-25T08:51:32+08:00",
-        "stop_at": "2026-11-25T23:30:00+08:00",
-        "started": true,
-        "submitted": true,
-        "manual_start": true,
-        "manual_start_at": "2026-11-25T12:06:45.002832+08:00"
+        "date": "2026-11-26",
+        "start_at": "2026-11-26T08:39:30+08:00",
+        "stop_at": "2026-11-26T23:30:00+08:00",
+        "started": false,
+        "submitted": false
       },
       "skipped_rows": [
         {
