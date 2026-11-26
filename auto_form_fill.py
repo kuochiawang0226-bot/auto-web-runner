@@ -233,7 +233,7 @@ def day_plan(batch, clock):
         base = clock.replace(hour=0, minute=0, second=0, microsecond=0)
         batch['daily'] = {
             'date': day,
-            'start_at': (base + timedelta(hours=8, minutes=30, seconds=secrets.randbelow(1800))).isoformat(),
+            'start_at': (base + timedelta(hours=8, minutes=30, seconds=int(hashlib.sha256((str(batch.get('fingerprint', '')) + ':' + day).encode()).hexdigest()[:16], 16) % 1800)).isoformat(),
             'stop_at': (base + timedelta(hours=23, minutes=30)).isoformat(),
             'started': False, 'submitted': False}
     return batch['daily']
@@ -641,17 +641,47 @@ def worker_active(store):
     return False
 
 
+def schedule_message(*parts):
+    text = ' '.join(str(part) for part in parts)
+    print(text, flush=True)
+    summary = os.environ.get('GITHUB_STEP_SUMMARY')
+    if summary:
+        with open(summary, 'a', encoding='utf-8') as stream:
+            stream.write(text + '\n\n')
+
+
+def show_today_plan(batch_id, batch, clock):
+    # 複本預覽，不寫入進度，避免和執行中的 worker 搶寫 state.json。
+    plan = day_plan(dict(batch), clock)
+    start = datetime.fromisoformat(plan['start_at'])
+    stop = datetime.fromisoformat(plan['stop_at'])
+    schedule_message('批次：', batch_id)
+    schedule_message('目前台灣時間：', clock.isoformat(timespec='seconds'))
+    schedule_message('今日預定開始：', start.isoformat(timespec='seconds'))
+    schedule_message('今日預定停止：', stop.isoformat(timespec='seconds'))
+    if clock < start:
+        seconds = int((start - clock).total_seconds())
+        schedule_message(f'距離預定開始：{seconds // 60} 分 {seconds % 60} 秒；實際開始仍依工作排隊情況。')
+    elif clock >= stop:
+        schedule_message('已過今日停止時間。')
+    else:
+        schedule_message('目前在今日執行時段內；若尚未啟動，可補跑。')
+    return plan
+
+
 def watchdog(store, state):
     """只喚醒既有批次，不操作網站、不修改進度。"""
+    clock = local_now()
     active = state.get('daily_schedule', {})
     if not active.get('enabled'):
-        print('備援檢查：沒有啟用中的每日排程。')
+        schedule_message('備援檢查：沒有啟用中的每日排程。')
         return
     batch_id = active['batch_id']
     batch = state['batches'][batch_id]
+    show_today_plan(batch_id, batch, clock)
     if batch['status'] not in ('ready', 'waiting_window', 'complete', 'limit_reached',
                                 'in_flight', 'operation_uncertain', 'ip_lookup_failed', 'retry_limit'):
-        print('備援檢查：不自動啟動此狀態：', batch['status'])
+        schedule_message('備援檢查：不自動啟動此狀態：', batch['status'])
         return
     store.check_stop()
     clock = local_now()
@@ -660,16 +690,16 @@ def watchdog(store, state):
     if daily.get('date') == clock.date().isoformat():
         stop = datetime.fromisoformat(daily['stop_at'])
     if not clock.replace(hour=8, minute=15, second=0, microsecond=0) <= clock < stop:
-        print('備援檢查：不在今日啟動時段，保留進度。')
+        schedule_message('備援檢查：不在今日啟動時段，保留進度。')
         return
     if worker_active(store):
-        print('備援檢查：接續工作仍在，不重複啟動。')
+        schedule_message('備援檢查：接續工作仍在，不重複啟動。')
         return
     dispatch_batch = dict(batch, daily={'date': clock.date().isoformat()})
     inputs = inputs_for(batch_id, dispatch_batch)
     inputs.update(mode='resume', expected_date=clock.date().isoformat())
     store.dispatch(inputs)
-    print('備援檢查：已要求沿用批次', batch_id, '的原進度續跑。')
+    schedule_message('備援檢查：已要求沿用批次', batch_id, '的原進度續跑。')
 
 
 def main():
