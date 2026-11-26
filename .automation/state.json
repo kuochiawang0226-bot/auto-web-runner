@@ -82291,7 +82291,7 @@
       "runs": 414,
       "retries": 0,
       "step": 2416,
-      "status": "waiting_window",
+      "status": "ready",
       "events": [
         {
           "round": 1,
@@ -102274,8 +102274,10 @@
         "date": "2026-11-26",
         "start_at": "2026-11-26T08:39:30+08:00",
         "stop_at": "2026-11-26T23:30:00+08:00",
-        "started": false,
-        "submitted": false
+        "started": true,
+        "submitted": false,
+        "manual_start": true,
+        "manual_start_at": "2026-11-26T10:06:10.502523+08:00"
       },
       "skipped_rows": [
         {
@@ -102307,8 +102309,7 @@
           "run_id": "45644872066"
         }
       ],
-      "total_skipped": 4,
-      "pause_reason": "已到今日停止時間，保留進度等待明日。"
+      "total_skipped": 4
     }
   },
   "daily_schedule": {
