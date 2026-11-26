@@ -82302,10 +82302,10 @@
       "round": 2,
       "total_processed": 1027,
       "index": 172,
-      "runs": 464,
+      "runs": 463,
       "retries": 0,
       "step": 2466,
-      "status": "in_flight",
+      "status": "stopped",
       "events": [
         {
           "round": 1,
@@ -102729,7 +102729,7 @@
           "time": "2026-11-26T03:14:34.065472+00:00",
           "row": 174,
           "run_id": "45747568193",
-          "result": "in_flight",
+          "result": "stopped_before_submit",
           "ip": "135.119.111.141",
           "ip_seen_before": false
         }
