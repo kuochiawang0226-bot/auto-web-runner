@@ -88,6 +88,51 @@ jobs:
             echo 'https://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
           fi
 
+      - name: Exclude unrelated Microsoft APT source
+        if: github.event_name != 'schedule' && inputs.mode != 'watchdog' && inputs.mode != 'status'
+        timeout-minutes: 2
+        run: |
+          sudo python3 - <<'PYTHON'
+          from pathlib import Path
+          import re
+          from urllib.parse import urlsplit
+          
+          def microsoft_url(value):
+              return urlsplit(value).hostname == 'packages.microsoft.com'
+          
+          def filter_sources(text, deb822):
+              if not deb822:
+                  return ''.join(line for line in text.splitlines(keepends=True)
+                                 if not (line.lstrip().startswith(('deb ', 'deb-src '))
+                                         and any(microsoft_url(word) for word in line.split())))
+              blocks = re.split(r'\n[ \t]*\n', text)
+              kept = []
+              for block in blocks:
+                  match = re.search(r'^URIs:[ \t]*(.*(?:\n[ \t]+[^\n]+)*)', block, re.M)
+                  if match:
+                      urls = match.group(1).split()
+                      remaining = [url for url in urls if not microsoft_url(url)]
+                      if not remaining:
+                          continue
+                      if remaining != urls:
+                          block = block[:match.start()] + 'URIs: ' + ' '.join(remaining) + block[match.end():]
+                  kept.append(block)
+              return '\n\n'.join(kept)
+          
+          paths = [Path('/etc/apt/sources.list')]
+          paths += sorted(Path('/etc/apt/sources.list.d').glob('*.list'))
+          paths += sorted(Path('/etc/apt/sources.list.d').glob('*.sources'))
+          for path in paths:
+              if not path.is_file():
+                  continue
+              original = path.read_text()
+              updated = filter_sources(original, path.suffix == '.sources')
+              if updated != original:
+                  path.with_suffix(path.suffix + '.before-playwright').write_text(original)
+                  path.write_text(updated)
+                  print('Disabled Microsoft APT source in', path.name)
+          PYTHON
+
       - name: Install Chromium and system dependencies
         if: github.event_name != 'schedule' && inputs.mode != 'watchdog' && inputs.mode != 'status'
         timeout-minutes: 10
