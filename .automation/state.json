@@ -82563,9 +82563,9 @@
       "round": 2,
       "total_processed": 1293,
       "index": 438,
-      "runs": 1240,
-      "retries": 0,
-      "step": 3243,
+      "runs": 1241,
+      "retries": 1,
+      "step": 3244,
       "status": "ready",
       "events": [
         {
@@ -109991,6 +109991,15 @@
           "ip": "3.41.210.71",
           "ip_seen_before": true,
           "error": "初次及額外 10 次均為重複 IP，未操作網站。"
+        },
+        {
+          "round": 2,
+          "time": "2026-11-28T04:11:57.195733+00:00",
+          "row": 440,
+          "run_id": "46106314419",
+          "result": "duplicate_ip",
+          "ip": "3.41.210.72",
+          "ip_seen_before": true
         }
       ],
       "daily": {
